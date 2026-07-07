@@ -1,0 +1,7 @@
+function(target_treat_all_warnings_as_errors target_name)
+    if (MSVC)
+        target_compile_options(App PRIVATE /W4)
+    else()
+        target_compile_options(App PRIVATE -Wall -Wextra -pedantic)
+    endif()
+endfunction()
