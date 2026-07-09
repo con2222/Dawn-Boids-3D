@@ -8,6 +8,7 @@ namespace WGPUBoids {
 class WebGPUContext {
   public:
     bool init(GLFWwindow* window, int width, int height);
+    void resizeSwapchain(int width, int height);
   private:
     bool initInstance();
     bool initAdapter();
@@ -16,7 +17,6 @@ class WebGPUContext {
 
     bool setSurface(WGPUSurface c_surface);
     void setupSurfaceConfig(int width, int height);
-    void resizeSwapchain(int width, int height);
 
     void setDefault(wgpu::Limits& limits) const;
     wgpu::RequiredLimits getRequiredLimits() const;
@@ -41,6 +41,7 @@ class WebGPUContext {
    const wgpu::Device& getDevice() const { return device; }
    const wgpu::Queue& getQueue() const { return queue; }
    wgpu::TextureFormat getSurfaceFormat() const { return surfaceFormat; }
+   wgpu::SurfaceConfiguration getSurfaceConfig() const { return surfaceConfig; }
    wgpu::TextureView getMsaaTextureView() const { return msaaTextureView; }
    wgpu::TextureView getDepthTextureView() const { return depthTextureView; }
    wgpu::TextureView getNextSurfaceViewData();

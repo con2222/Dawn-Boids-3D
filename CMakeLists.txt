@@ -61,6 +61,7 @@ set(SOURCES
     src/ResourceManager.cpp
     src/WebGPUContext.cpp
     src/WindowContext.cpp
+    src/Camera.cpp
 )
 
 add_executable(${APP_NAME} ${SOURCES})

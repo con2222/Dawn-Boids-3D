@@ -3,6 +3,7 @@
 #include "WebGpuContext.hpp"
 #include "Renderer.hpp"
 #include "WindowContext.hpp"
+#include "Camera.hpp"
 
 
 namespace WGPUBoids {
@@ -25,10 +26,16 @@ class App {
   private:
     void update(float deltaTime);
     void render();
+    void processInput();
+    float getDeltaTime() const;
+    bool handleWindowEvents();
 
     WindowContext window;
     WebGPUContext gpuContext;
     Renderer renderer;
+    Camera camera;
+
+    float deltaTime;
 };
 
 }; // namespace WGPUBoids

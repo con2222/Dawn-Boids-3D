@@ -23,6 +23,15 @@ bool WindowContext::init(int width, int height, const char* title) {
 			if (that != nullptr) that->setResized(true);
 		}
 	);
+	glfwSetScrollCallback(
+		window,
+		[](GLFWwindow* window, double xoffset, double yoffset) {
+			auto that = reinterpret_cast<WindowContext*>(glfwGetWindowUserPointer(window));
+			if (that != nullptr) {
+				that->setScrollDelta(static_cast<float>(yoffset));
+			}
+		}
+	);
 	return true;
 }
 
@@ -43,6 +52,12 @@ std::pair<int, int> WindowContext::getFramebufferSize() {
 
 WindowContext::~WindowContext() {
 	glfwDestroyWindow(window);
+}
+
+float WindowContext::getAndResetScrollDelta() {
+	float d = scrollDelta;
+	scrollDelta = 0.f;
+	return d;
 }
 
 } // namespace WGPUBoids

@@ -23,6 +23,7 @@ class WindowContext {
 
 	bool shouldClose();
 	void pollEvents();
+	float getAndResetScrollDelta();
 
 
 
@@ -31,6 +32,7 @@ class WindowContext {
 	int height, width;
 	std::string name;
 	bool framebufferResized = false;
+	float scrollDelta = 0.f;
 
   public:
 	GLFWwindow* getGLFWwindow() const { return window; }
@@ -39,6 +41,7 @@ class WindowContext {
 
 	bool hasResized() const { return framebufferResized; }
 	void setResized(bool resized) { framebufferResized = resized; }
+	void setScrollDelta(float delta) { scrollDelta = delta; }
 
 	std::pair<int, int> getFramebufferSize();
 };
