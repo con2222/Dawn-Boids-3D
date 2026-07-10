@@ -8,7 +8,7 @@
 namespace WGPUBoids {
 
 Camera::Camera()
-    : position(0.0f, 0.0f, 5.0f), worldUp(0.0f, 1.0f, 0.0f), yaw(-90.0f),
+    : position(0.0f, 0.0f, 10.0f), worldUp(0.0f, 1.0f, 0.0f), yaw(-90.0f),
 
       pitch(0.0f), movementSpeed(2.5f), mouseSensitivity(0.1f), fov(45.0f) {
     update();

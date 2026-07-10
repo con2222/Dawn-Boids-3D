@@ -2,6 +2,7 @@
 #include "ResourceManager.hpp"
 
 #include <iostream>
+#include <random>
 
 void printMatrix(const std::string& name, const glm::mat4& m) {
     std::cout << "=== " << name << " ===" << std::endl;
@@ -25,6 +26,16 @@ bool App::init(int width, int height, const char *title) {
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
     glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
 
+
+    // TODO: new func for random numbers
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::uniform_real_distribution dis(-4.0f, 4.0f);
+
+    for (size_t i = 0; i < numBoids; i++) {
+        boids.push_back(BoidData(glm::vec4(dis(gen), dis(gen), dis(gen), 0.f), glm::vec4(dis(gen), dis(gen), dis(gen), 0.f)));
+    }
+
     if (!window.init(width, height, title)) {
         std::cerr << "Failed to initialize Window Context\n";
         return false;
@@ -35,13 +46,13 @@ bool App::init(int width, int height, const char *title) {
         return false;
     }
 
-    wgpu::ShaderModule shader = ResourceManager::getInstance().loadShaderModule(SHADER_DIR "/test.wgsl", gpuContext.getDevice());
+    wgpu::ShaderModule shader = ResourceManager::getInstance().loadShaderModule(SHADER_DIR "/boids.wgsl", gpuContext.getDevice());
     if (!shader) {
         std::cerr << "Failed to load shader\n";
         return false;
     }
 
-    if (!renderer.init(gpuContext.getDevice(), gpuContext.getQueue(), shader, gpuContext.getSurfaceFormat(), gpuContext.getDepthTextureFormat())) {
+    if (!renderer.init(gpuContext.getDevice(), gpuContext.getQueue(), shader, gpuContext.getSurfaceFormat(), gpuContext.getDepthTextureFormat(), boids)) {
         std::cerr << "Failed to initialize renderer\n";
         return false;
     }
@@ -65,6 +76,7 @@ void App::update(float deltaTime) {
 }
 
 void App::render() {
+    renderer.updateBoidsData(boids);
     renderer.draw(gpuContext, camera);
     gpuContext.present();
 }

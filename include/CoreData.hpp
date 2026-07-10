@@ -10,4 +10,11 @@ struct Uniforms {
     float time;
 };
 
+struct BoidData {
+    glm::vec4 position = {0.f, 0.f, 0.f, 0.f};
+    glm::vec4 velocity;
+
+    BoidData(glm::vec4 a, glm::vec4 b) : position(a), velocity(b) {}
+};
+
 static_assert(sizeof(Uniforms) % 16 == 0);

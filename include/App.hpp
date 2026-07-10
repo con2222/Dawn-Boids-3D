@@ -4,6 +4,7 @@
 #include "Renderer.hpp"
 #include "WindowContext.hpp"
 #include "Camera.hpp"
+#include "CoreData.hpp"
 
 
 namespace WGPUBoids {
@@ -34,6 +35,10 @@ class App {
     WebGPUContext gpuContext;
     Renderer renderer;
     Camera camera;
+
+    std::vector<BoidData> boids;
+    int numBoids = 1000;
+
 
     float deltaTime;
 };

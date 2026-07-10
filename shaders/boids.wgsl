@@ -34,9 +34,12 @@ struct VertexOutput {
 fn vs_main(model: VertexInput, @builtin(instance_index) instanceIdx: u32) -> VertexOutput {
     var out: VertexOutput;
     
-    let mvp = uniforms.projectionMatrix * uniforms.viewMatrix * uniforms.modelMatrix;
+    let currentBoid = boidsData[instanceIdx];
+    
+    let scaledPos = uniforms.modelMatrix * vec4<f32>(model.position, 1.0);
+    let worldPos = vec4<f32>(scaledPos.xyz + currentBoid.position.xyz, 1.0);
 
-    out.clip_position = mvp * vec4<f32>(model.position, 1.0);
+    out.clip_position = uniforms.projectionMatrix * uniforms.viewMatrix * worldPos;
     
     //out.color = uniforms.color.xyz;
     out.color = model.color;
