@@ -10,6 +10,8 @@ struct SimulationParams {
     separationFactor: f32,
     turnFactor: f32,
     visionRadius: f32,
+    margin: f32,
+    activeBoidsCount: u32,
 }
 
 struct BoidData {
@@ -25,7 +27,7 @@ struct BoidData {
 fn compute_main(@builtin(global_invocation_id) GlobalInvocationID : vec3<u32>) {
     let index = GlobalInvocationID.x;
     
-    if (index >= arrayLength(&boidsIn)) {
+    if (index >= params.activeBoidsCount) {
         return;
     }
 
@@ -38,7 +40,7 @@ fn compute_main(@builtin(global_invocation_id) GlobalInvocationID : vec3<u32>) {
     var separationVector = vec4<f32>(0.0);
 
     let boidDir = normalize(currentBoid.velocity.xyz);
-    for (var j: u32 = 0; j < boidCount; j = j + 1u) {
+    for (var j: u32 = 0; j < params.activeBoidsCount; j = j + 1u) {
         if (j == index) { continue; }
 
         let diff = boidsIn[j].position.xyz - currentBoid.position.xyz;
@@ -85,21 +87,21 @@ fn compute_main(@builtin(global_invocation_id) GlobalInvocationID : vec3<u32>) {
         currentBoid.velocity = vec4<f32>(dir * params.minSpeed, 0.0);
     }
 
-    if (currentBoid.position.x < -params.cubeSize + 1.0) {
+    if (currentBoid.position.x < -params.cubeSize + params.margin) {
         currentBoid.velocity.x += params.turnFactor;
-    } else if (currentBoid.position.x > params.cubeSize - 1.0) {
+    } else if (currentBoid.position.x > params.cubeSize - params.margin) {
         currentBoid.velocity.x -= params.turnFactor;
     }
 
-    if (currentBoid.position.y < -params.cubeSize + 1.0) {
+    if (currentBoid.position.y < -params.cubeSize + params.margin) {
         currentBoid.velocity.y += params.turnFactor;
-    } else if (currentBoid.position.y > params.cubeSize - 1.0) {
+    } else if (currentBoid.position.y > params.cubeSize - params.margin) {
         currentBoid.velocity.y -= params.turnFactor;
     }
 
-    if (currentBoid.position.z < -params.cubeSize + 1.0) {
+    if (currentBoid.position.z < -params.cubeSize + params.margin) {
         currentBoid.velocity.z += params.turnFactor;
-    } else if (currentBoid.position.z > params.cubeSize - 1.0) {
+    } else if (currentBoid.position.z > params.cubeSize - params.margin) {
         currentBoid.velocity.z -= params.turnFactor;
     }
 

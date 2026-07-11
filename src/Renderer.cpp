@@ -1,6 +1,7 @@
 #include "Renderer.hpp"
 #include "CoreData.hpp"
 #include "Camera.hpp"
+#include "Interface.hpp"
 
 #include "glm/gtc/matrix_transform.hpp"
 
@@ -170,8 +171,11 @@ void Renderer::initCompute(wgpu::ShaderModule computeShader, size_t boidsCount) 
     computePipeline = device.CreateComputePipeline(&computeDesc);
 }
 
-void Renderer::draw(WebGPUContext &gpu, const Camera& camera, const SimulationParams& params) {
+void Renderer::draw(WebGPUContext &gpu, const Camera& camera, Interface& uiLayer) {
     device.Tick();
+
+    auto params = uiLayer.getParams();
+    params.visualRange = glm::cos(glm::radians(params.visionRadius));
 
     Uniforms boidUniforms, cubeUniforms;
     boidUniforms.time = glfwGetTime();
@@ -215,7 +219,7 @@ void Renderer::draw(WebGPUContext &gpu, const Camera& camera, const SimulationPa
         computePass.SetBindGroup(0, computeBindGroupB, 0, nullptr);
     }
 
-    uint32_t workgroupCount = (currentBoidsCount + 63) / 64;
+    uint32_t workgroupCount = (params.activeBoidsCount + 63) / 64;
     computePass.DispatchWorkgroups(workgroupCount, 1, 1);
     computePass.End();
 
@@ -248,7 +252,7 @@ void Renderer::draw(WebGPUContext &gpu, const Camera& camera, const SimulationPa
     } else {
         pass.SetBindGroup(0, boidBindGroups[0], 0, nullptr);
     }
-    pass.DrawIndexed(indexCount, currentBoidsCount, 0, 0, 0);
+    pass.DrawIndexed(indexCount, params.activeBoidsCount, 0, 0, 0);
 
     pass.SetPipeline(linePipeline);
     pass.SetVertexBuffer(0, cubeVertexBuffer);
@@ -256,6 +260,23 @@ void Renderer::draw(WebGPUContext &gpu, const Camera& camera, const SimulationPa
     pass.SetBindGroup(0, cubeBindGroups[0], 0, nullptr);
     pass.DrawIndexed(cubeIndexCount, 1, 0, 0, 0);
     pass.End();
+
+    /* Render imGui UI */
+    wgpu::RenderPassColorAttachment uiAttachment = {};
+    uiAttachment.view = targetView;
+    uiAttachment.resolveTarget = nullptr;
+    uiAttachment.loadOp = wgpu::LoadOp::Load;
+    uiAttachment.storeOp = wgpu::StoreOp::Store;
+
+    wgpu::RenderPassDescriptor pass2Desc = {};
+    pass2Desc.colorAttachmentCount = 1;
+    pass2Desc.colorAttachments = &uiAttachment;
+    pass2Desc.depthStencilAttachment = nullptr;
+
+    wgpu::RenderPassEncoder pass2 = encoder.BeginRenderPass(&pass2Desc);
+    uiLayer.draw(pass2);
+    pass2.End();
+    
 
     wgpu::CommandBufferDescriptor cmdBufferDesc = {};
     wgpu::CommandBuffer command = encoder.Finish(&cmdBufferDesc);

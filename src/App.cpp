@@ -26,8 +26,6 @@ bool App::init(int width, int height, const char *title) {
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
     glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
 
-    params.visionRadius = glm::radians(params.visionRadius);
-
     // TODO: new func for random numbers
     std::random_device rd;
     std::mt19937 gen(rd());
@@ -55,12 +53,17 @@ bool App::init(int width, int height, const char *title) {
     }
 
 
-    if (!renderer.init(gpuContext.getDevice(), gpuContext.getQueue(), renderShader, computeShader, gpuContext.getSurfaceFormat(), gpuContext.getDepthTextureFormat(), boids, params)) {
+    if (!renderer.init(gpuContext.getDevice(), gpuContext.getQueue(), renderShader, computeShader, gpuContext.getSurfaceFormat(), gpuContext.getDepthTextureFormat(), boids, uiLayer.getParams())) {
         std::cerr << "Failed to initialize renderer\n";
         return false;
     }
 
     renderer.updateMeshBuffers(ResourceManager::getInstance().loadObj("boid.obj"));
+
+    if (!uiLayer.init(window.getGLFWwindow(), gpuContext.getDevice(), gpuContext.getSurfaceFormat())) {
+        std::cerr << "Could not initialize UI Layer!" << std::endl;
+        return false;
+    }
 
     return true;
 }
@@ -79,8 +82,10 @@ void App::update(float deltaTime) {
 }
 
 void App::render() {
-    params.deltaTime = deltaTime;
-    renderer.draw(gpuContext, camera, params);
+    uiLayer.setDeltaTime(deltaTime);
+    uiLayer.beginFrame();
+    uiLayer.buildUI();
+    renderer.draw(gpuContext, camera, uiLayer);
     gpuContext.present();
 }
 

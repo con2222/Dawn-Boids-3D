@@ -11,6 +11,7 @@
 namespace WGPUBoids {
 
 class Camera;
+class Interface;
 
 class Renderer {
   public:
@@ -22,7 +23,7 @@ class Renderer {
 
     void updateMeshBuffers(const Mesh &model);
     void initBoidsData(const std::vector<BoidData>& boids);
-    void draw(WebGPUContext &gpu, const Camera& camera, const SimulationParams& params);
+    void draw(WebGPUContext &gpu, const Camera& camera, Interface& uiLayer);
   private:
     void initBuffers(const SimulationParams& params);
     void initBindGroups(size_t boidsCount);

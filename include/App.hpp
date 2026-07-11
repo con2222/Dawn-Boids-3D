@@ -5,6 +5,7 @@
 #include "WindowContext.hpp"
 #include "Camera.hpp"
 #include "CoreData.hpp"
+#include "Interface.hpp"
 
 
 namespace WGPUBoids {
@@ -35,10 +36,11 @@ class App {
     WebGPUContext gpuContext;
     Renderer renderer;
     Camera camera;
+    Interface uiLayer;
 
     // TODO: create struct for params
     std::vector<BoidData> boids;
-    int numBoids = 10;
+    int numBoids = 150000;
     SimulationParams params;
 
     float deltaTime;

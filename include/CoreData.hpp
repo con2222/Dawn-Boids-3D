@@ -29,7 +29,10 @@ struct SimulationParams {
     float separationFactor = 0.05f;
     float turnFactor = 0.05f;
     float visionRadius = 240;
-    float pad;
+    float margin = 1.0f;
+    uint32_t activeBoidsCount = 1000;
+
+    float pad[3];
 };
 
 static_assert(sizeof(Uniforms) % 16 == 0);
