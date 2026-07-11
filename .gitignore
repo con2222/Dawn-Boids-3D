@@ -19,6 +19,7 @@ resources/*
 *.o
 *.out
 .vs/
+imgui.ini
 
 *.spv
 *.json
