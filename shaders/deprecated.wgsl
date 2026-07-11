@@ -8,8 +8,6 @@ struct SimulationParams {
     cohesionFactor: f32,
     alignmentFactor: f32,
     separationFactor: f32,
-    turnFactor: f32,
-    visionRadius: f32,
 }
 
 struct BoidData {
@@ -47,7 +45,7 @@ fn compute_main(@builtin(global_invocation_id) GlobalInvocationID : vec3<u32>) {
         
         let toNeighborDir = diff / dist;
 
-        if (dot(boidDir, toNeighborDir) > params.visionRadius) {
+        if (dot(boidDir, toNeighborDir) > -0.5) { // 240 degrees
             if (dist <= params.visualRange) {
                 numNeighbors += 1u;
                 centerOfMass += boidsIn[j].position;
@@ -66,14 +64,8 @@ fn compute_main(@builtin(global_invocation_id) GlobalInvocationID : vec3<u32>) {
         centerOfMass /= nFloat;
         avgVelocity /= nFloat;
 
-        let desiredCohesion = normalize(centerOfMass.xyz - currentBoid.position.xyz) * params.maxSpeed;
-        let steerCohesion = desiredCohesion - currentBoid.velocity.xyz;
-        currentBoid.velocity += vec4<f32>(steerCohesion * params.cohesionFactor, 0.0);
-
-        let desiredAlignment = normalize(avgVelocity.xyz) * params.maxSpeed;
-        let steerAlignment = desiredAlignment - currentBoid.velocity.xyz;
-        currentBoid.velocity += vec4<f32>(steerAlignment * params.alignmentFactor, 0.0);
-
+        currentBoid.velocity += (centerOfMass - currentBoid.position) * params.cohesionFactor; // factor
+        currentBoid.velocity += (avgVelocity - currentBoid.velocity) * params.alignmentFactor;
         currentBoid.velocity += separationVector * params.separationFactor;
     }   
 
@@ -85,24 +77,34 @@ fn compute_main(@builtin(global_invocation_id) GlobalInvocationID : vec3<u32>) {
         currentBoid.velocity = vec4<f32>(dir * params.minSpeed, 0.0);
     }
 
-    if (currentBoid.position.x < -params.cubeSize + 1.0) {
-        currentBoid.velocity.x += params.turnFactor;
-    } else if (currentBoid.position.x > params.cubeSize - 1.0) {
-        currentBoid.velocity.x -= params.turnFactor;
-    }
-
-    if (currentBoid.position.y < -params.cubeSize + 1.0) {
-        currentBoid.velocity.y += params.turnFactor;
-    } else if (currentBoid.position.y > params.cubeSize - 1.0) {
-        currentBoid.velocity.y -= params.turnFactor;
-    }
-
-    if (currentBoid.position.z < -params.cubeSize + 1.0) {
-        currentBoid.velocity.z += params.turnFactor;
-    } else if (currentBoid.position.z > params.cubeSize - 1.0) {
-        currentBoid.velocity.z -= params.turnFactor;
-    }
-
     currentBoid.position += currentBoid.velocity * params.deltaTime;
+
+    let margin = 0.2; 
+    let limit = params.cubeSize - margin;
+
+    if (currentBoid.position.x > limit) {
+        currentBoid.position.x = limit;
+        currentBoid.velocity.x *= -1.0;
+    } else if (currentBoid.position.x < -limit) {
+        currentBoid.position.x = -limit;
+        currentBoid.velocity.x *= -1.0;
+    }
+
+    if (currentBoid.position.y > limit) {
+        currentBoid.position.y = limit;
+        currentBoid.velocity.y *= -1.0;
+    } else if (currentBoid.position.y < -limit) {
+        currentBoid.position.y = -limit;
+        currentBoid.velocity.y *= -1.0;
+    }
+
+    if (currentBoid.position.z > limit) {
+        currentBoid.position.z = limit;
+        currentBoid.velocity.z *= -1.0;
+    } else if (currentBoid.position.z < -limit) {
+        currentBoid.position.z = -limit;
+        currentBoid.velocity.z *= -1.0;
+    }
+
     boidsOut[index] = currentBoid;
 }

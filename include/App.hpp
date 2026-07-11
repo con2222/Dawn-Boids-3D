@@ -38,7 +38,7 @@ class App {
 
     // TODO: create struct for params
     std::vector<BoidData> boids;
-    int numBoids = 10000;
+    int numBoids = 10;
     SimulationParams params;
 
     float deltaTime;

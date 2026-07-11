@@ -27,7 +27,9 @@ struct SimulationParams {
     float cohesionFactor = 0.005f;
     float alignmentFactor = 0.05f;
     float separationFactor = 0.05f;
-    float pad[3];
+    float turnFactor = 0.05f;
+    float visionRadius = 240;
+    float pad;
 };
 
 static_assert(sizeof(Uniforms) % 16 == 0);

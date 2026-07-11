@@ -26,6 +26,7 @@ bool App::init(int width, int height, const char *title) {
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
     glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
 
+    params.visionRadius = glm::radians(params.visionRadius);
 
     // TODO: new func for random numbers
     std::random_device rd;
