@@ -36,9 +36,10 @@ class App {
     Renderer renderer;
     Camera camera;
 
+    // TODO: create struct for params
     std::vector<BoidData> boids;
-    int numBoids = 1000;
-
+    int numBoids = 10000;
+    SimulationParams params;
 
     float deltaTime;
 };

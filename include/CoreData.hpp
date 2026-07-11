@@ -17,4 +17,19 @@ struct BoidData {
     BoidData(glm::vec4 a, glm::vec4 b) : position(a), velocity(b) {}
 };
 
+struct SimulationParams {
+    float deltaTime;
+    float visualRange = 2.0f;
+    float protectedRange = 0.5f;
+    float maxSpeed = 5.0f;
+    float minSpeed = 2.0f;
+    float cubeSize = 4.5f;
+    float cohesionFactor = 0.005f;
+    float alignmentFactor = 0.05f;
+    float separationFactor = 0.05f;
+    float pad[3];
+};
+
 static_assert(sizeof(Uniforms) % 16 == 0);
+static_assert(sizeof(BoidData) % 16 == 0);
+static_assert(sizeof(SimulationParams) % 16 == 0);

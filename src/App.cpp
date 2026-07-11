@@ -46,13 +46,15 @@ bool App::init(int width, int height, const char *title) {
         return false;
     }
 
-    wgpu::ShaderModule shader = ResourceManager::getInstance().loadShaderModule(SHADER_DIR "/boids.wgsl", gpuContext.getDevice());
-    if (!shader) {
-        std::cerr << "Failed to load shader\n";
+    wgpu::ShaderModule renderShader = ResourceManager::getInstance().loadShaderModule(SHADER_DIR "/boids.wgsl", gpuContext.getDevice());
+    wgpu::ShaderModule computeShader = ResourceManager::getInstance().loadShaderModule(SHADER_DIR "/compute.wgsl", gpuContext.getDevice());
+    if (!renderShader || !computeShader) {
+        std::cerr << "Failed to load shaders\n";
         return false;
     }
 
-    if (!renderer.init(gpuContext.getDevice(), gpuContext.getQueue(), shader, gpuContext.getSurfaceFormat(), gpuContext.getDepthTextureFormat(), boids)) {
+
+    if (!renderer.init(gpuContext.getDevice(), gpuContext.getQueue(), renderShader, computeShader, gpuContext.getSurfaceFormat(), gpuContext.getDepthTextureFormat(), boids, params)) {
         std::cerr << "Failed to initialize renderer\n";
         return false;
     }
@@ -76,8 +78,8 @@ void App::update(float deltaTime) {
 }
 
 void App::render() {
-    renderer.updateBoidsData(boids);
-    renderer.draw(gpuContext, camera);
+    params.deltaTime = deltaTime;
+    renderer.draw(gpuContext, camera, params);
     gpuContext.present();
 }
 

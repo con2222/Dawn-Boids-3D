@@ -16,17 +16,21 @@ class Renderer {
   public:
     Renderer() = default;
 
-    bool init(wgpu::Device device, wgpu::Queue queue, wgpu::ShaderModule shader, wgpu::TextureFormat surfaceFormat, wgpu::TextureFormat depthFormat, const std::vector<BoidData>& boids);
+    bool init(wgpu::Device device, wgpu::Queue queue, wgpu::ShaderModule renderShader, wgpu::ShaderModule computeShader, wgpu::TextureFormat surfaceFormat, 
+      wgpu::TextureFormat depthFormat, const std::vector<BoidData>& boids, const SimulationParams& params);
 
 
     void updateMeshBuffers(const Mesh &model);
-    void updateBoidsData(const std::vector<BoidData>& boids);
-    void draw(WebGPUContext &gpu, const Camera& camera);
+    void initBoidsData(const std::vector<BoidData>& boids);
+    void draw(WebGPUContext &gpu, const Camera& camera, const SimulationParams& params);
   private:
-    void initBuffers();
+    void initBuffers(const SimulationParams& params);
     void initBindGroups(size_t boidsCount);
     void initRenderPipeline(wgpu::ShaderModule shader, wgpu::TextureFormat surfaceFormat, wgpu::TextureFormat depthFormat);
     void initLinePipeline(wgpu::ShaderModule shader, wgpu::TextureFormat surfaceFormat, wgpu::TextureFormat depthFormat);
+
+    void initCompute(wgpu::ShaderModule computeShader, size_t boidsCount);
+
     std::vector<wgpu::BindGroupLayout> bindGroupLayouts;
     wgpu::PipelineLayout pipelineLayout;
     std::vector<wgpu::BindGroup> boidBindGroups;
@@ -53,9 +57,6 @@ class Renderer {
     uint32_t indexBufferSize = 1024;
     uint32_t indexCount = 0;
 
-    wgpu::Buffer boidUniformBuffer;
-    wgpu::Buffer boidDataBuffer;
-
 
     // Second Pipeline
     wgpu::Buffer cubeVertexBuffer;
@@ -64,6 +65,21 @@ class Renderer {
 
     wgpu::Buffer cubeUniformBuffer;
 
+    // Compute pipeline
+    wgpu::ComputePipeline computePipeline;
+    wgpu::PipelineLayout computePipelineLayout;
+    wgpu::BindGroupLayout bglCompute;
+
+    wgpu::Buffer boidUniformBuffer;
+    wgpu::Buffer simulationParamsBuffer;
+
+    wgpu::Buffer boidsBufferA;
+    wgpu::Buffer boidsBufferB;
+
+    wgpu::BindGroup computeBindGroupA, computeBindGroupB;
+
+
+    int frameCount = 0;
 };
 
 
