@@ -1,5 +1,6 @@
 #include "App.hpp"
 #include "ResourceManager.hpp"
+#include "imgui.h"
 
 #include <iostream>
 #include <random>
@@ -32,7 +33,8 @@ bool App::init(int width, int height, const char *title) {
     std::uniform_real_distribution dis(-4.0f, 4.0f);
 
     for (size_t i = 0; i < numBoids; i++) {
-        boids.push_back(BoidData(glm::vec4(dis(gen), dis(gen), dis(gen), 0.f), glm::vec4(dis(gen), dis(gen), dis(gen), 0.f)));
+        float flockId = static_cast<float>(i % 3);
+        boids.push_back(BoidData(glm::vec4(dis(gen), dis(gen), dis(gen), flockId), glm::vec4(dis(gen), dis(gen), dis(gen), 0.f), glm::vec4(0.f)));
     }
 
     if (!window.init(width, height, title)) {
@@ -90,40 +92,48 @@ void App::render() {
 }
 
 void App::processInput() {
-    if (glfwGetKey(window.getGLFWwindow(), GLFW_KEY_W) == GLFW_PRESS) camera.moveForward(deltaTime);
-    if (glfwGetKey(window.getGLFWwindow(), GLFW_KEY_S) == GLFW_PRESS) camera.moveBackward(deltaTime);
-    if (glfwGetKey(window.getGLFWwindow(), GLFW_KEY_A) == GLFW_PRESS) camera.moveLeft(deltaTime);
-    if (glfwGetKey(window.getGLFWwindow(), GLFW_KEY_D) == GLFW_PRESS) camera.moveRight(deltaTime);
-    if (glfwGetKey(window.getGLFWwindow(), GLFW_KEY_P) == GLFW_PRESS) {
-        printMatrix("\nView Matrix", camera.getViewMatrix());
-        printMatrix("Projection", camera.getProjectionMatrix(1920.0f / 1080.0f));
+    ImGuiIO& io = ImGui::GetIO();
+
+
+    if (!io.WantCaptureKeyboard) {
+        if (glfwGetKey(window.getGLFWwindow(), GLFW_KEY_W) == GLFW_PRESS) camera.moveForward(deltaTime);
+        if (glfwGetKey(window.getGLFWwindow(), GLFW_KEY_S) == GLFW_PRESS) camera.moveBackward(deltaTime);
+        if (glfwGetKey(window.getGLFWwindow(), GLFW_KEY_A) == GLFW_PRESS) camera.moveLeft(deltaTime);
+        if (glfwGetKey(window.getGLFWwindow(), GLFW_KEY_D) == GLFW_PRESS) camera.moveRight(deltaTime);
+        if (glfwGetKey(window.getGLFWwindow(), GLFW_KEY_P) == GLFW_PRESS) {
+            printMatrix("\nView Matrix", camera.getViewMatrix());
+            printMatrix("Projection", camera.getProjectionMatrix(1920.0f / 1080.0f));
+        }
     }
+    
 
-    float scroll = window.getAndResetScrollDelta();
-    if (scroll != 0.f) {
-        camera.zoom(scroll);
-    }
+    if (!io.WantCaptureMouse) {
+        float scroll = window.getAndResetScrollDelta();
+        if (scroll != 0.f) {
+            camera.zoom(scroll);
+        }
 
-    static double lastX = 0.0, lastY = 0.0;
-    static bool isDragging = false;
+        static double lastX = 0.0, lastY = 0.0;
+        static bool isDragging = false;
 
-    if (glfwGetMouseButton(window.getGLFWwindow(), GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS) {
-        double xpos, ypos;
-        glfwGetCursorPos(window.getGLFWwindow(), &xpos, &ypos);
+        if (glfwGetMouseButton(window.getGLFWwindow(), GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS) {
+            double xpos, ypos;
+            glfwGetCursorPos(window.getGLFWwindow(), &xpos, &ypos);
 
-        if (!isDragging) {
-            lastX = xpos;
-            lastY = ypos;
-            isDragging = true;
+            if (!isDragging) {
+                lastX = xpos;
+                lastY = ypos;
+                isDragging = true;
+            }
+            else {
+                camera.rotate(static_cast<float>(xpos - lastX), static_cast<float>(ypos - lastY));
+                lastX = xpos;
+                lastY = ypos;
+            }
         }
         else {
-            camera.rotate(static_cast<float>(xpos - lastX), static_cast<float>(ypos - lastY));
-            lastX = xpos;
-            lastY = ypos;
+            isDragging = false;
         }
-    }
-    else {
-        isDragging = false;
     }
 }
 

@@ -23,9 +23,15 @@ private:
     unsigned int fontSize = 16.f;
     float currentScale = 2.1f;
     SimulationParams params;
+    bool showVelocity = false;
+    bool showCoM = false;
+    bool divideFlocks = false;
 public:
     const SimulationParams& getParams() const { return params; }
     void setDeltaTime(float deltaTime) { params.deltaTime = deltaTime; }
+
+    bool getShowVelocity() const { return showVelocity; }
+    bool getShowCoM() const { return showCoM; }
 };
 
 } // namespace WGPUBoids

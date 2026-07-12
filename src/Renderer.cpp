@@ -18,6 +18,8 @@ bool Renderer::init(wgpu::Device dev, wgpu::Queue q, wgpu::ShaderModule renderSh
     initCompute(computeShader, boids.size());
     initRenderPipeline(renderShader, surfaceFormat, depthFormat);
     initLinePipeline(renderShader, surfaceFormat, depthFormat);
+    initDebugVelocityPipeline(renderShader, surfaceFormat, depthFormat);
+    initDebugCoMPipeline(renderShader, surfaceFormat, depthFormat);
 
     return renderPipeline != nullptr;
 }
@@ -175,7 +177,7 @@ void Renderer::draw(WebGPUContext &gpu, const Camera& camera, Interface& uiLayer
     device.Tick();
 
     auto params = uiLayer.getParams();
-    params.visualRange = glm::cos(glm::radians(params.visionRadius));
+    params.visionRadius = glm::cos(glm::radians(params.visionRadius));
 
     Uniforms boidUniforms, cubeUniforms;
     boidUniforms.time = glfwGetTime();
@@ -186,6 +188,7 @@ void Renderer::draw(WebGPUContext &gpu, const Camera& camera, Interface& uiLayer
     boidUniforms.projectionMatrix = camera.getProjectionMatrix(aspect);
     boidUniforms.cameraPosition = camera.getPosition();
     boidUniforms.color = { 0.2f, 0.1f, 0.3f, 1.f };
+    boidUniforms.divideFlocks = params.divideFlocks;
 
 
     cubeUniforms.time = glfwGetTime();
@@ -259,6 +262,20 @@ void Renderer::draw(WebGPUContext &gpu, const Camera& camera, Interface& uiLayer
     pass.SetIndexBuffer(cubeIndexBuffer, wgpu::IndexFormat::Uint32, 0, cubeIndexCount * sizeof(uint32_t));
     pass.SetBindGroup(0, cubeBindGroups[0], 0, nullptr);
     pass.DrawIndexed(cubeIndexCount, 1, 0, 0, 0);
+    
+    if (uiLayer.getShowVelocity()) {
+        pass.SetPipeline(debugVelocityPipeline);
+        if (frameCount % 2 == 0) pass.SetBindGroup(0, boidBindGroups[1], 0, nullptr);
+        else pass.SetBindGroup(0, boidBindGroups[0], 0, nullptr);
+        pass.Draw(2, params.activeBoidsCount, 0, 0);
+    }
+    if (uiLayer.getShowCoM()) {
+        pass.SetPipeline(debugCoMPipeline);
+        if (frameCount % 2 == 0) pass.SetBindGroup(0, boidBindGroups[1], 0, nullptr);
+        else pass.SetBindGroup(0, boidBindGroups[0], 0, nullptr);
+        pass.Draw(2, params.activeBoidsCount, 0, 0); 
+    }
+
     pass.End();
 
     /* Render imGui UI */
@@ -600,6 +617,104 @@ void Renderer::setDefault(wgpu::BindGroupLayoutEntry &bindingLayout) {
     bindingLayout.texture.multisampled = false;
     bindingLayout.texture.sampleType = wgpu::TextureSampleType::Undefined;
     bindingLayout.texture.viewDimension = wgpu::TextureViewDimension::Undefined;
+}
+
+void Renderer::initDebugVelocityPipeline(wgpu::ShaderModule shader, wgpu::TextureFormat surfaceFormat, wgpu::TextureFormat depthFormat) {
+    wgpu::PipelineLayoutDescriptor layoutDesc{};
+    layoutDesc.bindGroupLayoutCount = 1;
+    layoutDesc.bindGroupLayouts = bindGroupLayouts.data();
+    wgpu::PipelineLayout pipelineLayout = device.CreatePipelineLayout(&layoutDesc);
+
+    wgpu::RenderPipelineDescriptor pipelineDesc{};
+    pipelineDesc.layout = pipelineLayout;
+
+    pipelineDesc.vertex.bufferCount = 0; 
+    pipelineDesc.vertex.buffers = nullptr;
+    pipelineDesc.vertex.module = shader;
+    pipelineDesc.vertex.entryPoint = "vs_debug_velocity";
+
+    pipelineDesc.primitive.topology = wgpu::PrimitiveTopology::LineList;
+    pipelineDesc.primitive.cullMode = wgpu::CullMode::None;
+
+    wgpu::BlendState blendState{};
+    blendState.color.srcFactor = wgpu::BlendFactor::One;
+    blendState.color.dstFactor = wgpu::BlendFactor::Zero;
+    blendState.color.operation = wgpu::BlendOperation::Add;
+    blendState.alpha.srcFactor = wgpu::BlendFactor::One;
+    blendState.alpha.dstFactor = wgpu::BlendFactor::Zero;
+    blendState.alpha.operation = wgpu::BlendOperation::Add;
+
+    wgpu::ColorTargetState colorTarget{};
+    colorTarget.format = surfaceFormat;
+    colorTarget.blend = &blendState;
+    colorTarget.writeMask = wgpu::ColorWriteMask::All;
+
+    wgpu::FragmentState fragmentState{};
+    fragmentState.module = shader;
+    fragmentState.entryPoint = "fs_main";
+    fragmentState.targetCount = 1;
+    fragmentState.targets = &colorTarget;
+    pipelineDesc.fragment = &fragmentState;
+
+    wgpu::DepthStencilState depthStencilState{};
+    depthStencilState.format = depthFormat;
+    depthStencilState.depthWriteEnabled = true;
+    depthStencilState.depthCompare = wgpu::CompareFunction::Less;
+    pipelineDesc.depthStencil = &depthStencilState;
+
+    pipelineDesc.multisample.count = 4;
+    pipelineDesc.multisample.mask = ~0u;
+
+    debugVelocityPipeline = device.CreateRenderPipeline(&pipelineDesc);
+}
+
+void Renderer::initDebugCoMPipeline(wgpu::ShaderModule shader, wgpu::TextureFormat surfaceFormat, wgpu::TextureFormat depthFormat) {
+    wgpu::PipelineLayoutDescriptor layoutDesc{};
+    layoutDesc.bindGroupLayoutCount = 1;
+    layoutDesc.bindGroupLayouts = bindGroupLayouts.data();
+    wgpu::PipelineLayout pipelineLayout = device.CreatePipelineLayout(&layoutDesc);
+
+    wgpu::RenderPipelineDescriptor pipelineDesc{};
+    pipelineDesc.layout = pipelineLayout;
+
+    pipelineDesc.vertex.bufferCount = 0; 
+    pipelineDesc.vertex.buffers = nullptr;
+    pipelineDesc.vertex.module = shader;
+    pipelineDesc.vertex.entryPoint = "vs_debug_com";
+
+    pipelineDesc.primitive.topology = wgpu::PrimitiveTopology::LineList;
+    pipelineDesc.primitive.cullMode = wgpu::CullMode::None;
+
+    wgpu::BlendState blendState{};
+    blendState.color.srcFactor = wgpu::BlendFactor::One;
+    blendState.color.dstFactor = wgpu::BlendFactor::Zero;
+    blendState.color.operation = wgpu::BlendOperation::Add;
+    blendState.alpha.srcFactor = wgpu::BlendFactor::One;
+    blendState.alpha.dstFactor = wgpu::BlendFactor::Zero;
+    blendState.alpha.operation = wgpu::BlendOperation::Add;
+
+    wgpu::ColorTargetState colorTarget{};
+    colorTarget.format = surfaceFormat;
+    colorTarget.blend = &blendState;
+    colorTarget.writeMask = wgpu::ColorWriteMask::All;
+
+    wgpu::FragmentState fragmentState{};
+    fragmentState.module = shader;
+    fragmentState.entryPoint = "fs_main";
+    fragmentState.targetCount = 1;
+    fragmentState.targets = &colorTarget;
+    pipelineDesc.fragment = &fragmentState;
+
+    wgpu::DepthStencilState depthStencilState{};
+    depthStencilState.format = depthFormat;
+    depthStencilState.depthWriteEnabled = true;
+    depthStencilState.depthCompare = wgpu::CompareFunction::Less;
+    pipelineDesc.depthStencil = &depthStencilState;
+
+    pipelineDesc.multisample.count = 4;
+    pipelineDesc.multisample.mask = ~0u;
+
+    debugCoMPipeline = device.CreateRenderPipeline(&pipelineDesc);
 }
 
 }; // namespace WGPUBoids

@@ -79,6 +79,12 @@ class Renderer {
 
     wgpu::BindGroup computeBindGroupA, computeBindGroupB;
 
+    // Debug pipeline
+    wgpu::RenderPipeline debugVelocityPipeline;
+    wgpu::RenderPipeline debugCoMPipeline;
+
+    void initDebugVelocityPipeline(wgpu::ShaderModule shader, wgpu::TextureFormat surfaceFormat, wgpu::TextureFormat depthFormat);
+    void initDebugCoMPipeline(wgpu::ShaderModule shader, wgpu::TextureFormat surfaceFormat, wgpu::TextureFormat depthFormat);
 
     int frameCount = 0;
 };

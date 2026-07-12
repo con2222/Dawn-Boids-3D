@@ -70,11 +70,11 @@ void Interface::buildUI()
     ImGui::SliderFloat("Protected Range", &params.protectedRange, 0.05f, 3.0f);
     ImGui::SliderFloat("Vision Angle (Deg)", &params.visionRadius, 0.0f, 360.f);
 
-    ImGui::SeparatorText("Cube params");
+    ImGui::SeparatorText("Cube Params");
     ImGui::SliderFloat("Cube Size", &params.cubeSize, 2.0f, 20.0f);
-    ImGui::SliderFloat("Margin cube", &params.margin, 0.1f, 2.f);
+    ImGui::SliderFloat("Margin Cube", &params.margin, 0.1f, 2.f);
 
-    ImGui::SeparatorText("Boids speed");
+    ImGui::SeparatorText("Boids Speed");
     ImGui::SliderFloat("Max Speed", &params.maxSpeed, 1.0f, 15.0f);
     ImGui::SliderFloat("Min Speed", &params.minSpeed, 0.0f, 5.0f);
 
@@ -88,9 +88,19 @@ void Interface::buildUI()
     ImGui::Separator();
     ImGui::Spacing();
 
+    ImGui::SeparatorText("Simulation Rules");
     uint32_t minBoids = 0;
     uint32_t maxBoids = 100000;
     ImGui::SliderScalar("Active Boids", ImGuiDataType_U32, &params.activeBoidsCount, &minBoids, &maxBoids, "%u");
+
+    ImGui::Checkbox("Divide into Flocks", &divideFlocks);
+    params.divideFlocks = divideFlocks ? 1u : 0u;
+
+    ImGui::Spacing();
+    ImGui::SeparatorText("Debug Options");
+    ImGui::Checkbox("Show Velocity", &showVelocity);
+    ImGui::Checkbox("Show Center of Mass", &showCoM);
+
 
     ImGui::End();
 }

@@ -7,14 +7,18 @@ struct Uniforms {
     glm::mat4 projectionMatrix;
     glm::vec4 color;
     glm::vec3 cameraPosition;
+    uint32_t divideFlocks = 0;
     float time;
+
+    float pad[3];
 };
 
 struct BoidData {
     glm::vec4 position = {0.f, 0.f, 0.f, 0.f};
     glm::vec4 velocity;
+    glm::vec4 centerOfMass = {0.f, 0.f, 0.f, 0.f};
 
-    BoidData(glm::vec4 a, glm::vec4 b) : position(a), velocity(b) {}
+    BoidData(glm::vec4 a, glm::vec4 b, glm::vec4 c) : position(a), velocity(b), centerOfMass(c) {}
 };
 
 struct SimulationParams {
@@ -31,8 +35,9 @@ struct SimulationParams {
     float visionRadius = 240;
     float margin = 1.0f;
     uint32_t activeBoidsCount = 1000;
+    uint32_t divideFlocks = 0;
 
-    float pad[3];
+    float pad[2];
 };
 
 static_assert(sizeof(Uniforms) % 16 == 0);

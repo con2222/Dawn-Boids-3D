@@ -12,11 +12,13 @@ struct SimulationParams {
     visionRadius: f32,
     margin: f32,
     activeBoidsCount: u32,
+    divideFlocks: u32,
 }
 
 struct BoidData {
     position: vec4<f32>,
     velocity: vec4<f32>,
+    centerOfMass: vec4<f32>,
 };
 
 @group(0) @binding(0) var<uniform> params : SimulationParams;
@@ -32,6 +34,7 @@ fn compute_main(@builtin(global_invocation_id) GlobalInvocationID : vec3<u32>) {
     }
 
     var currentBoid = boidsIn[index];
+    let flockId = currentBoid.position.w;
     let boidCount = arrayLength(&boidsIn);
 
     var numNeighbors = 0u;
@@ -42,6 +45,9 @@ fn compute_main(@builtin(global_invocation_id) GlobalInvocationID : vec3<u32>) {
     let boidDir = normalize(currentBoid.velocity.xyz);
     for (var j: u32 = 0; j < params.activeBoidsCount; j = j + 1u) {
         if (j == index) { continue; }
+        if (params.divideFlocks == 1u && boidsIn[j].position.w != flockId) { 
+            continue; 
+        }
 
         let diff = boidsIn[j].position.xyz - currentBoid.position.xyz;
         let dist = length(diff);
@@ -72,12 +78,20 @@ fn compute_main(@builtin(global_invocation_id) GlobalInvocationID : vec3<u32>) {
         let steerCohesion = desiredCohesion - currentBoid.velocity.xyz;
         currentBoid.velocity += vec4<f32>(steerCohesion * params.cohesionFactor, 0.0);
 
+        let oldCoM = currentBoid.centerOfMass.xyz;
+        let smoothCoM = mix(oldCoM, centerOfMass.xyz, 0.1);
+        currentBoid.centerOfMass = vec4<f32>(smoothCoM, 1.0);
+
+        //currentBoid.centerOfMass = vec4<f32>(centerOfMass.xyz, 1.0);
+
         let desiredAlignment = normalize(avgVelocity.xyz) * params.maxSpeed;
         let steerAlignment = desiredAlignment - currentBoid.velocity.xyz;
         currentBoid.velocity += vec4<f32>(steerAlignment * params.alignmentFactor, 0.0);
 
         currentBoid.velocity += separationVector * params.separationFactor;
-    }   
+    } else {
+        currentBoid.centerOfMass = currentBoid.position;
+    }
 
     var velocityLength = length(currentBoid.velocity.xyz);
     let dir = normalize(currentBoid.velocity.xyz);
@@ -105,6 +119,6 @@ fn compute_main(@builtin(global_invocation_id) GlobalInvocationID : vec3<u32>) {
         currentBoid.velocity.z -= params.turnFactor;
     }
 
-    currentBoid.position += currentBoid.velocity * params.deltaTime;
+    currentBoid.position += vec4<f32>(currentBoid.velocity.xyz * params.deltaTime, 0.0);
     boidsOut[index] = currentBoid;
 }
