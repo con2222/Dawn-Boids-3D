@@ -25,6 +25,7 @@ struct SimulationParams {
     float deltaTime;
     float visualRange = 2.0f;
     float protectedRange = 0.5f;
+    float strangerProtectedRange = 2.5f;
     float maxSpeed = 5.0f;
     float minSpeed = 2.0f;
     float cubeSize = 4.5f;
@@ -32,12 +33,11 @@ struct SimulationParams {
     float alignmentFactor = 0.05f;
     float separationFactor = 0.05f;
     float turnFactor = 0.05f;
+    float strangeForceFactor = 10.0f;
     float visionRadius = 240;
     float margin = 1.0f;
     uint32_t activeBoidsCount = 1000;
     uint32_t divideFlocks = 0;
-
-    float pad[2];
 };
 
 static_assert(sizeof(Uniforms) % 16 == 0);

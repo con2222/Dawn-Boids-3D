@@ -177,10 +177,10 @@ wgpu::RequiredLimits WebGPUContext::getRequiredLimits() const {
 
     requiredLimits.limits.maxVertexAttributes = 4;
     requiredLimits.limits.maxVertexBuffers = 3;
-    requiredLimits.limits.maxBufferSize = 150000;
+    requiredLimits.limits.maxBufferSize = supportedLimits.limits.maxBufferSize;
     requiredLimits.limits.maxBindGroups = 2;
     requiredLimits.limits.maxUniformBuffersPerShaderStage = 2;
-    requiredLimits.limits.maxUniformBufferBindingSize = 2048;
+    requiredLimits.limits.maxUniformBufferBindingSize = supportedLimits.limits.maxStorageBufferBindingSize;
     requiredLimits.limits.maxVertexBufferArrayStride = 20;
     requiredLimits.limits.minUniformBufferOffsetAlignment = supportedLimits.limits.minUniformBufferOffsetAlignment;
     requiredLimits.limits.minStorageBufferOffsetAlignment = supportedLimits.limits.minStorageBufferOffsetAlignment;

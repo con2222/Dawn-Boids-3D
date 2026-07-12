@@ -2,6 +2,7 @@ struct SimulationParams {
     deltaTime: f32,
     visualRange: f32,
     protectedRange: f32,
+    strangerProtectedRange: f32,
     maxSpeed: f32,
     minSpeed: f32,
     cubeSize: f32,
@@ -9,6 +10,7 @@ struct SimulationParams {
     alignmentFactor: f32,
     separationFactor: f32,
     turnFactor: f32,
+    strangeForceFactor: f32,
     visionRadius: f32,
     margin: f32,
     activeBoidsCount: u32,
@@ -45,9 +47,6 @@ fn compute_main(@builtin(global_invocation_id) GlobalInvocationID : vec3<u32>) {
     let boidDir = normalize(currentBoid.velocity.xyz);
     for (var j: u32 = 0; j < params.activeBoidsCount; j = j + 1u) {
         if (j == index) { continue; }
-        if (params.divideFlocks == 1u && boidsIn[j].position.w != flockId) { 
-            continue; 
-        }
 
         let diff = boidsIn[j].position.xyz - currentBoid.position.xyz;
         let dist = length(diff);
@@ -57,14 +56,24 @@ fn compute_main(@builtin(global_invocation_id) GlobalInvocationID : vec3<u32>) {
 
         if (dot(boidDir, toNeighborDir) > params.visionRadius) {
             if (dist <= params.visualRange) {
-                numNeighbors += 1u;
-                centerOfMass += boidsIn[j].position;
-                avgVelocity += boidsIn[j].velocity;
+                let isFriendly = (params.divideFlocks == 0u) || (boidsIn[j].position.w == flockId);
+                if (isFriendly) {
+                    numNeighbors += 1u;
+                    centerOfMass += boidsIn[j].position;
+                    avgVelocity += boidsIn[j].velocity;
 
-                if (dist <= params.protectedRange) {
-                    let force = -diff;
-                    separationVector += vec4<f32>(force / (dist * dist), 0.0);
+                    if (dist <= params.protectedRange) {
+                        let force = -diff;
+                        separationVector += vec4<f32>(force / (dist * dist), 0.0);
+                    }
+                } else {
+                    if (dist <= params.strangerProtectedRange) {
+                        let force = -diff * params.strangeForceFactor; // new param
+                        separationVector += vec4<f32>(force / (dist * dist), 0.0);
+                        
+                    }
                 }
+                
             }
         }
     }
@@ -82,16 +91,14 @@ fn compute_main(@builtin(global_invocation_id) GlobalInvocationID : vec3<u32>) {
         let smoothCoM = mix(oldCoM, centerOfMass.xyz, 0.1);
         currentBoid.centerOfMass = vec4<f32>(smoothCoM, 1.0);
 
-        //currentBoid.centerOfMass = vec4<f32>(centerOfMass.xyz, 1.0);
-
         let desiredAlignment = normalize(avgVelocity.xyz) * params.maxSpeed;
         let steerAlignment = desiredAlignment - currentBoid.velocity.xyz;
         currentBoid.velocity += vec4<f32>(steerAlignment * params.alignmentFactor, 0.0);
-
-        currentBoid.velocity += separationVector * params.separationFactor;
     } else {
         currentBoid.centerOfMass = currentBoid.position;
     }
+
+    currentBoid.velocity += separationVector * params.separationFactor;
 
     var velocityLength = length(currentBoid.velocity.xyz);
     let dir = normalize(currentBoid.velocity.xyz);

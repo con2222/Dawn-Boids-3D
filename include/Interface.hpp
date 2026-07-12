@@ -26,6 +26,9 @@ private:
     bool showVelocity = false;
     bool showCoM = false;
     bool divideFlocks = false;
+
+    GLFWwindow* glfwWindow = nullptr;
+    bool showControlPanel = false;
 public:
     const SimulationParams& getParams() const { return params; }
     void setDeltaTime(float deltaTime) { params.deltaTime = deltaTime; }

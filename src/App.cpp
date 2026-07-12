@@ -143,6 +143,10 @@ float App::getDeltaTime() const {
     float deltaTime = static_cast<float>(currentFrame - lastFrame);
     lastFrame = currentFrame;
 
+    if (deltaTime > 0.1f) {
+        deltaTime = 0.016f; 
+    }
+
     return deltaTime;
 }
 
