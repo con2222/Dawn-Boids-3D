@@ -21,7 +21,7 @@ class App {
     App(App&&) noexcept;
     App& operator=(App&&) noexcept;
 
-    bool init(int width, int height, const char* title);
+    bool init(const char* title);
 
     void run();
 
@@ -38,10 +38,8 @@ class App {
     Camera camera;
     Interface uiLayer;
 
-    // TODO: create struct for params
     std::vector<BoidData> boids;
     int numBoids = 150000;
-    SimulationParams params;
 
     float deltaTime;
 };

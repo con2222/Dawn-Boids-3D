@@ -19,28 +19,38 @@ void printMatrix(const std::string& name, const glm::mat4& m) {
 
 namespace WGPUBoids {
 
-bool App::init(int width, int height, const char *title) {
+bool App::init(const char *title) {
     if (!glfwInit()) {
         std::cerr << "Could not initialize GLFW!" << std::endl;
         return false;
     }
+
+    GLFWmonitor* primaryMonitor = glfwGetPrimaryMonitor();
+
+    const GLFWvidmode* mode = glfwGetVideoMode(primaryMonitor);
+    int width = mode->width;
+    int height = mode->height;
+
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
     glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
+    glfwWindowHint(GLFW_MAXIMIZED, GLFW_TRUE);
+
+    if (!window.init(width, height, title)) {
+        std::cerr << "Failed to initialize Window Context\n";
+        return false;
+    }
 
     // TODO: new func for random numbers
     std::random_device rd;
     std::mt19937 gen(rd());
-    std::uniform_real_distribution dis(-4.0f, 4.0f);
+    std::uniform_real_distribution dis(-uiLayer.getParams().cubeSize * 3.f, uiLayer.getParams().cubeSize * 3.f);
 
     for (size_t i = 0; i < numBoids; i++) {
         float flockId = static_cast<float>(i % 3);
         boids.push_back(BoidData(glm::vec4(dis(gen), dis(gen), dis(gen), flockId), glm::vec4(dis(gen), dis(gen), dis(gen), 0.f), glm::vec4(0.f)));
     }
 
-    if (!window.init(width, height, title)) {
-        std::cerr << "Failed to initialize Window Context\n";
-        return false;
-    }
+    
 
     if (!gpuContext.init(window.getGLFWwindow(), width, height)) {
         std::cerr << "Failed to initialize WebGPU Context\n";

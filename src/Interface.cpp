@@ -74,11 +74,12 @@ void Interface::buildUI()
     ImGui::End();
 
     if (showControlPanel) {
-        ImGui::Begin("Boids Simulation", &showControlPanel);
-    
-        ImGui::Text("Control Panel");
-        ImGui::Separator();
+        ImGui::Begin("Control Panel", &showControlPanel);
+
         ImGui::Spacing();
+        ImGui::SeparatorText("Main Options");
+        ImGui::Spacing();
+
 
         if (ImGui::CollapsingHeader("Distance")) {
             ImGui::SliderFloat("Visual Range", &params.visualRange, 0.5f, 10.0f);
@@ -104,7 +105,7 @@ void Interface::buildUI()
         }
 
         ImGui::Spacing();
-        ImGui::Separator();
+        ImGui::SeparatorText("Advanced Options");
         ImGui::Spacing();
 
         if (ImGui::CollapsingHeader("Simulation Rules")) {
