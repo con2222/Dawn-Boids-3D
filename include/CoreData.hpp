@@ -32,7 +32,7 @@ struct SimulationParams {
     float cohesionFactor = 0.005f;
     float alignmentFactor = 0.05f;
     float separationFactor = 0.05f;
-    float turnFactor = 0.05f;
+    float turnFactor = 0.15f;
     float strangeForceFactor = 10.0f;
     float visionRadius = 240;
     float margin = 1.0f;

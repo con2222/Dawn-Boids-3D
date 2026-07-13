@@ -17,6 +17,10 @@ class Camera {
     void moveBackward(float deltaTime);
     void moveLeft(float deltaTime);
     void moveRight(float deltaTime);
+    void moveUp(float deltaTime);
+    void moveDown(float deltaTime);
+
+    void updateCameraSpeed(float delta);
 
     glm::mat4 getViewMatrix() const;
     glm::mat4 getProjectionMatrix(float aspect) const;

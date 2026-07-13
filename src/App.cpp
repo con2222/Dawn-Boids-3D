@@ -1,21 +1,11 @@
 #include "App.hpp"
 #include "ResourceManager.hpp"
 #include "imgui.h"
+#include "Debug.hpp"
 
 #include <iostream>
 #include <random>
 
-void printMatrix(const std::string& name, const glm::mat4& m) {
-    std::cout << "=== " << name << " ===" << std::endl;
-    for (int row = 0; row < 4; ++row) {
-        std::cout << "[ ";
-        for (int col = 0; col < 4; ++col) {
-            std::cout << std::setw(8) << std::fixed << std::setprecision(2) << m[col][row] << " ";
-        }
-        std::cout << "]" << std::endl;
-    }
-    std::cout << "==================\n" << std::endl;
-}
 
 namespace WGPUBoids {
 
@@ -110,6 +100,13 @@ void App::processInput() {
         if (glfwGetKey(window.getGLFWwindow(), GLFW_KEY_S) == GLFW_PRESS) camera.moveBackward(deltaTime);
         if (glfwGetKey(window.getGLFWwindow(), GLFW_KEY_A) == GLFW_PRESS) camera.moveLeft(deltaTime);
         if (glfwGetKey(window.getGLFWwindow(), GLFW_KEY_D) == GLFW_PRESS) camera.moveRight(deltaTime);
+        if (glfwGetKey(window.getGLFWwindow(), GLFW_KEY_SPACE) == GLFW_PRESS) camera.moveUp(deltaTime);
+        if (glfwGetKey(window.getGLFWwindow(), GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS) camera.moveDown(deltaTime);
+
+        // TODO: Add new params
+        if (glfwGetKey(window.getGLFWwindow(), GLFW_KEY_EQUAL) == GLFW_PRESS) camera.updateCameraSpeed(0.05f);
+        if (glfwGetKey(window.getGLFWwindow(), GLFW_KEY_MINUS) == GLFW_PRESS) camera.updateCameraSpeed(-0.05f);
+
         if (glfwGetKey(window.getGLFWwindow(), GLFW_KEY_P) == GLFW_PRESS) {
             printMatrix("\nView Matrix", camera.getViewMatrix());
             printMatrix("Projection", camera.getProjectionMatrix(1920.0f / 1080.0f));

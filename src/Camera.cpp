@@ -53,6 +53,18 @@ void Camera::moveRight(float deltaTime) {
     position += right * movementSpeed * deltaTime;
 }
 
+void Camera::moveUp(float deltaTime) {
+    position += up * movementSpeed * deltaTime;
+}
+
+void Camera::moveDown(float deltaTime) {
+    position -= up * movementSpeed * deltaTime;
+}
+
+void Camera::updateCameraSpeed(float delta) {
+    movementSpeed += delta;
+}
+
 glm::mat4 Camera::getViewMatrix() const {
     return glm::lookAt(position, position + front, up);
 }
