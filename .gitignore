@@ -6,8 +6,8 @@ cmake_install.cmake
 compile_commands.json
 build/
 
-resources/*
-!resources/Car/
+assets/*
+!assets/boid.obj
 .clang-format
 
 .idea/

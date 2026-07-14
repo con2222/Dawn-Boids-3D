@@ -41,8 +41,8 @@ bool App::init(const char *title) {
         return false;
     }
 
-    wgpu::ShaderModule renderShader = ResourceManager::getInstance().loadShaderModule(SHADER_DIR "/boids.wgsl", gpuContext.getDevice());
-    wgpu::ShaderModule computeShader = ResourceManager::getInstance().loadShaderModule(SHADER_DIR "/compute.wgsl", gpuContext.getDevice());
+    wgpu::ShaderModule renderShader = ResourceManager::getInstance().loadShaderModule("boids.wgsl", gpuContext.getDevice());
+    wgpu::ShaderModule computeShader = ResourceManager::getInstance().loadShaderModule("compute.wgsl", gpuContext.getDevice());
     if (!renderShader || !computeShader) {
         std::cerr << "Failed to load shaders\n";
         return false;

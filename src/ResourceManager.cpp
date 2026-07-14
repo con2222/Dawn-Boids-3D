@@ -23,7 +23,7 @@ ResourceManager::ResourceManager(std::filesystem::path sPath, std::filesystem::p
 wgpu::ShaderModule ResourceManager::loadShaderModule(std::string_view shaderName, wgpu::Device device) {
     std::filesystem::path currentPath = std::filesystem::current_path();
 
-    shaderPath = currentPath / "shaders" / shaderName;
+    shaderPath = std::filesystem::path(SHADER_DIR) / shaderName;
 
     std::ifstream file(shaderPath);
 
@@ -52,11 +52,9 @@ wgpu::ShaderModule ResourceManager::loadShaderModule(std::string_view shaderName
 
 Mesh ResourceManager::loadObj(std::string_view objFileName) {
 
-    objPath /= objFileName;
+    objPath = std::filesystem::path(RESOURCE_DIR) / objFileName;
 
     auto mtlPath = objPath.parent_path().string() + "/";
-
-
 
     tinyobj::attrib_t attrib;
     std::vector<tinyobj::shape_t> shapes;
