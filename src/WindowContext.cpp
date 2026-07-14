@@ -1,4 +1,5 @@
 #include "WindowContext.hpp"
+#include "std_image.h"
 
 #include <iostream>
 
@@ -13,6 +14,14 @@ bool WindowContext::init(int width, int height, const char* title) {
 	if (!window) {
 		std::cerr << "Can't create window" << std::endl;
 		return false;
+	}
+
+	
+	GLFWimage images[1];
+	images[0].pixels = stbi_load("assets/app_icon.png", &images[0].width, &images[0].height, 0, 4);
+	if (images[0].pixels) {
+		glfwSetWindowIcon(window, 1, images);
+		stbi_image_free(images[0].pixels);
 	}
 
 	glfwSetWindowUserPointer(window, this);

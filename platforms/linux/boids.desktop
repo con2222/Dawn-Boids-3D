@@ -1,0 +1,9 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=Boids 3D Simulation
+Comment=GPU Flocking Simulation
+Exec=./boids-simulation
+Icon=./assets/app_icon.png
+Terminal=false
+Categories=Game;Simulation;

@@ -66,6 +66,29 @@ set(SOURCES
     src/Interface.cpp
 )
 
+if(WIN32)
+    list(APPEND SOURCES platforms/windows/windows_resources.rc)
+endif()
+
+if(APPLE)
+    set_source_files_properties("assets/app_icon.icns" PROPERTIES MACOSX_PACKAGE_LOCATION "Resources")
+    
+    list(APPEND SOURCES "assets/app_icon.icns")
+    
+    set_target_properties(${APP_NAME} PROPERTIES 
+        MACOSX_BUNDLE TRUE
+        MACOSX_BUNDLE_ICON_FILE "app_icon.icns"
+    )
+endif()
+
+if(UNIX AND NOT APPLE)
+    configure_file(
+        "${CMAKE_CURRENT_SOURCE_DIR}/platforms/linux/boids.desktop"
+        "${CMAKE_CURRENT_BINARY_DIR}/boids.desktop"
+        COPYONLY
+    )
+endif()
+
 add_executable(${APP_NAME} ${SOURCES})
 
 if(NOT SHOW_CONSOLE)

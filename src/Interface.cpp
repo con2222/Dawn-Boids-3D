@@ -26,6 +26,7 @@ bool Interface::init(GLFWwindow* window, Camera* pCamera, wgpu::Device device, w
     camera = pCamera;
 
 	ImGuiIO& io = ImGui::GetIO();
+    io.IniFilename = nullptr;
 	ImGui::StyleColorsDark();
 
 	float xScale, yScale;
