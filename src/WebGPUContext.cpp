@@ -78,7 +78,6 @@ bool WebGPUContext::initDevice() {
     deviceDesc.nextInChain = nullptr;
     deviceDesc.label = "My device";
     deviceDesc.requiredFeatureCount = 0;
-    deviceDesc.requiredLimits = nullptr;
     deviceDesc.defaultQueue.nextInChain = nullptr;
     deviceDesc.defaultQueue.label = "The default queue";
 
@@ -171,62 +170,10 @@ wgpu::RequiredLimits WebGPUContext::getRequiredLimits() const {
     adapter.GetLimits(&supportedLimits);
 
     wgpu::RequiredLimits requiredLimits = {};
-    setDefault(requiredLimits.limits);
-
-    requiredLimits.limits.maxVertexAttributes = 4;
-    requiredLimits.limits.maxVertexBuffers = 3;
-    requiredLimits.limits.maxBufferSize = supportedLimits.limits.maxBufferSize;
-    requiredLimits.limits.maxBindGroups = 2;
-    requiredLimits.limits.maxUniformBuffersPerShaderStage = 2;
-    requiredLimits.limits.maxUniformBufferBindingSize = supportedLimits.limits.maxStorageBufferBindingSize;
-    requiredLimits.limits.maxVertexBufferArrayStride = 20;
-    requiredLimits.limits.minUniformBufferOffsetAlignment = supportedLimits.limits.minUniformBufferOffsetAlignment;
-    requiredLimits.limits.minStorageBufferOffsetAlignment = supportedLimits.limits.minStorageBufferOffsetAlignment;
-    requiredLimits.limits.maxInterStageShaderComponents = 16;
-    requiredLimits.limits.maxTextureDimension1D = supportedLimits.limits.maxTextureDimension1D;
-    requiredLimits.limits.maxTextureDimension2D = supportedLimits.limits.maxTextureDimension2D;
-    requiredLimits.limits.maxTextureArrayLayers = 1;
-    requiredLimits.limits.maxSampledTexturesPerShaderStage = 1;
-    requiredLimits.limits.maxSamplersPerShaderStage = 1;
-    requiredLimits.limits.maxTextureDimension1D = 2048;
-    requiredLimits.limits.maxTextureDimension2D = 2048;
+    
+    requiredLimits.limits = supportedLimits.limits;
 
     return requiredLimits;
-}
-
-void WebGPUContext::setDefault(wgpu::Limits& limits) const {
-    limits.maxTextureDimension1D = WGPU_LIMIT_U32_UNDEFINED;
-    limits.maxTextureDimension2D = WGPU_LIMIT_U32_UNDEFINED;
-    limits.maxTextureDimension3D = WGPU_LIMIT_U32_UNDEFINED;
-    limits.maxTextureArrayLayers = WGPU_LIMIT_U32_UNDEFINED;
-    limits.maxBindGroups = WGPU_LIMIT_U32_UNDEFINED;
-    limits.maxBindGroupsPlusVertexBuffers = WGPU_LIMIT_U32_UNDEFINED;
-    limits.maxBindingsPerBindGroup = WGPU_LIMIT_U32_UNDEFINED;
-    limits.maxDynamicUniformBuffersPerPipelineLayout = WGPU_LIMIT_U32_UNDEFINED;
-    limits.maxDynamicStorageBuffersPerPipelineLayout = WGPU_LIMIT_U32_UNDEFINED;
-    limits.maxSampledTexturesPerShaderStage = WGPU_LIMIT_U32_UNDEFINED;
-    limits.maxSamplersPerShaderStage = WGPU_LIMIT_U32_UNDEFINED;
-    limits.maxStorageBuffersPerShaderStage = WGPU_LIMIT_U32_UNDEFINED;
-    limits.maxStorageTexturesPerShaderStage = WGPU_LIMIT_U32_UNDEFINED;
-    limits.maxUniformBuffersPerShaderStage = WGPU_LIMIT_U32_UNDEFINED;
-    limits.maxUniformBufferBindingSize = WGPU_LIMIT_U64_UNDEFINED;
-    limits.maxStorageBufferBindingSize = WGPU_LIMIT_U64_UNDEFINED;
-    limits.minUniformBufferOffsetAlignment = WGPU_LIMIT_U32_UNDEFINED;
-    limits.minStorageBufferOffsetAlignment = WGPU_LIMIT_U32_UNDEFINED;
-    limits.maxVertexBuffers = WGPU_LIMIT_U32_UNDEFINED;
-    limits.maxBufferSize = WGPU_LIMIT_U64_UNDEFINED;
-    limits.maxVertexAttributes = WGPU_LIMIT_U32_UNDEFINED;
-    limits.maxVertexBufferArrayStride = WGPU_LIMIT_U32_UNDEFINED;
-    limits.maxInterStageShaderComponents = WGPU_LIMIT_U32_UNDEFINED;
-    limits.maxInterStageShaderVariables = WGPU_LIMIT_U32_UNDEFINED;
-    limits.maxColorAttachments = WGPU_LIMIT_U32_UNDEFINED;
-    limits.maxColorAttachmentBytesPerSample = WGPU_LIMIT_U32_UNDEFINED;
-    limits.maxComputeWorkgroupStorageSize = WGPU_LIMIT_U32_UNDEFINED;
-    limits.maxComputeInvocationsPerWorkgroup = WGPU_LIMIT_U32_UNDEFINED;
-    limits.maxComputeWorkgroupSizeX = WGPU_LIMIT_U32_UNDEFINED;
-    limits.maxComputeWorkgroupSizeY = WGPU_LIMIT_U32_UNDEFINED;
-    limits.maxComputeWorkgroupSizeZ = WGPU_LIMIT_U32_UNDEFINED;
-    limits.maxComputeWorkgroupsPerDimension = WGPU_LIMIT_U32_UNDEFINED;
 }
 
 wgpu::TextureView WebGPUContext::getNextSurfaceViewData() {

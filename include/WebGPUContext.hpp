@@ -19,7 +19,6 @@ class WebGPUContext {
     bool setSurface(WGPUSurface c_surface);
     void setupSurfaceConfig(int width, int height);
 
-    void setDefault(wgpu::Limits& limits) const;
     wgpu::RequiredLimits getRequiredLimits() const;
 
     wgpu::Instance instance;
