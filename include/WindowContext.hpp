@@ -34,6 +34,9 @@ class WindowContext {
 	bool framebufferResized = false;
 	float scrollDelta = 0.f;
 
+	bool isFullscreen = false;
+	int savedX = 0, savedY = 0, savedWidth = 0, savedHeight = 0;
+
   public:
 	GLFWwindow* getGLFWwindow() const { return window; }
 	int getWidth() const { return width; }
@@ -42,6 +45,8 @@ class WindowContext {
 	bool hasResized() const { return framebufferResized; }
 	void setResized(bool resized) { framebufferResized = resized; }
 	void setScrollDelta(float delta) { scrollDelta = delta; }
+
+	void toggleFullscreen();
 
 	std::pair<int, int> getFramebufferSize();
 };

@@ -28,6 +28,9 @@ private:
     bool showCoM = false;
     bool divideFlocks = false;
 
+    bool requestFullscreenToggle = false;
+    bool isFullscreen = false;
+
     GLFWwindow* glfwWindow = nullptr;
     Camera* camera = nullptr;
     bool showControlPanel = false;
@@ -39,6 +42,14 @@ public:
     bool getShowCoM() const { return showCoM; }
 
     int getTargetFPS() const { return targetFPS; }
+
+    bool consumeFullscreenToggle() {
+        if (requestFullscreenToggle) {
+            requestFullscreenToggle = false;
+            return true;
+        }
+        return false;
+    }
 };
 
 } // namespace WGPUBoids

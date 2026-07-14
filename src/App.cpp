@@ -81,6 +81,10 @@ void App::run() {
             render();
         }
 
+        if (uiLayer.consumeFullscreenToggle()) {
+            window.toggleFullscreen();
+        }
+
         enforceFPSLimit(frameStart, uiLayer.getTargetFPS());
     }
 }

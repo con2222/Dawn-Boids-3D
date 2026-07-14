@@ -69,4 +69,20 @@ float WindowContext::getAndResetScrollDelta() {
 	return d;
 }
 
+void WindowContext::toggleFullscreen() {
+	if (isFullscreen) {
+		glfwSetWindowMonitor(window, nullptr, savedX, savedY, savedWidth, savedHeight, GLFW_DONT_CARE);
+		isFullscreen = false;
+	} else {
+		glfwGetWindowPos(window, &savedX, &savedY);
+        glfwGetWindowSize(window, &savedWidth, &savedHeight);
+
+        GLFWmonitor* monitor = glfwGetPrimaryMonitor();
+        const GLFWvidmode* mode = glfwGetVideoMode(monitor);
+
+        glfwSetWindowMonitor(window, monitor, 0, 0, mode->width, mode->height, mode->refreshRate);
+        isFullscreen = true;
+	}
+}
+
 } // namespace WGPUBoids

@@ -126,14 +126,10 @@ void Interface::buildUI()
             }
         }
 
-        
-
         if (ImGui::CollapsingHeader("Debug Options")) {
             ImGui::Checkbox("Show Velocity", &showVelocity);
             ImGui::Checkbox("Show Center of Mass", &showCoM);
         }
-
-        ImGui::Spacing();
 
         if (ImGui::CollapsingHeader("Camera Settings")) {
             if (camera != nullptr) {
@@ -169,6 +165,10 @@ void Interface::buildUI()
 
 
         if (ImGui::CollapsingHeader("System & Performance")) {
+            if (ImGui::Button(isFullscreen ? "Windowed Mode" : "Fullscreen", ImVec2(-1, 0))) {
+                requestFullscreenToggle = true;
+            }
+
             if (targetFPS == 0) {
                 ImGui::Text("FPS Limit: Uncapped");
             } else {
