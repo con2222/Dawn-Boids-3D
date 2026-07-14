@@ -3,7 +3,6 @@
 #include "Mesh.hpp"
 #include "webgpu/webgpu_cpp.h"
 
-//std
 #include <filesystem>
 
 

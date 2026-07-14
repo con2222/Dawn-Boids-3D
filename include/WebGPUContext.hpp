@@ -3,6 +3,7 @@
 #include "webgpu/webgpu_cpp.h"
 #include "glfw3webgpu.h"
 
+
 namespace WGPUBoids {
 
 class WebGPUContext {

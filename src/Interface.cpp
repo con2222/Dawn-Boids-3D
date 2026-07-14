@@ -2,8 +2,8 @@
 #include "imgui.h"
 #include "backends/imgui_impl_glfw.h"
 #include "backends/imgui_impl_wgpu.h"
+#include "Camera.hpp"
 
-// std
 #include <iostream>
 
 
@@ -15,7 +15,7 @@ Interface::~Interface()
 	destroy();
 }
 
-bool Interface::init(GLFWwindow* window, wgpu::Device device, wgpu::TextureFormat targetFormat)
+bool Interface::init(GLFWwindow* window, Camera* pCamera, wgpu::Device device, wgpu::TextureFormat targetFormat)
 {
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
@@ -23,6 +23,7 @@ bool Interface::init(GLFWwindow* window, wgpu::Device device, wgpu::TextureForma
 	if (!success) return false;
 
     glfwWindow = window;
+    camera = pCamera;
 
 	ImGuiIO& io = ImGui::GetIO();
 	ImGui::StyleColorsDark();
@@ -76,6 +77,8 @@ void Interface::buildUI()
     if (showControlPanel) {
         ImGui::Begin("Control Panel", &showControlPanel);
 
+        ImGui::TextColored(ImVec4(0.83, 0.64, 0.2, 1),"Hold down CTRL and click any parameter to set a custom value");
+
         ImGui::Spacing();
         ImGui::SeparatorText("Main Options");
         ImGui::Spacing();
@@ -118,7 +121,7 @@ void Interface::buildUI()
             if (params.divideFlocks) {
                 ImGui::SeparatorText("Divide flocks Options");
                 ImGui::SliderFloat("Stranger Protected Range", &params.strangerProtectedRange, 2.f, 5.f);
-                ImGui::SliderFloat("Strange Force Factor", &params.strangeForceFactor, 5.f, 20.f);
+                ImGui::SliderFloat("Stranger Force Factor", &params.strangeForceFactor, 5.f, 20.f);
             }
         }
 
@@ -127,6 +130,40 @@ void Interface::buildUI()
         if (ImGui::CollapsingHeader("Debug Options")) {
             ImGui::Checkbox("Show Velocity", &showVelocity);
             ImGui::Checkbox("Show Center of Mass", &showCoM);
+        }
+
+        ImGui::Spacing();
+
+        ImGui::SeparatorText("Camera Settings");
+
+        if (camera != nullptr) {
+            int currentMode = (camera->getMode() == CameraMode::Free) ? 0 : 1;
+            int previousMode = currentMode;
+
+            ImGui::RadioButton("Free Camera", &currentMode, 0);
+            ImGui::SameLine();
+            ImGui::RadioButton("Orbital", &currentMode, 1);
+
+            if (currentMode != previousMode) {
+                if (currentMode == 0) camera->setMode(CameraMode::Free);
+                else camera->setMode(CameraMode::Orbital);
+            }
+
+            ImGui::Spacing();
+
+            float currentSpeed = camera->getMovementSpeed();
+            if (ImGui::SliderFloat("Camera Speed", &currentSpeed, 1.0f, 100.0f)) {
+                camera->setMovementSpeed(currentSpeed);
+            }
+
+            if (camera->getMode() == CameraMode::Orbital) {
+                float currentRadius = camera->getRadius();
+                if (ImGui::SliderFloat("Orbital Distance", &currentRadius, 1.0f, 300.0f)) {
+                    camera->setRadius(currentRadius);
+                }
+            }
+        } else {
+            ImGui::TextColored(ImVec4(1,0,0,1), "Camera pointer is missing!");
         }
 
         ImGui::Spacing();

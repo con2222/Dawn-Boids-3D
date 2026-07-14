@@ -7,7 +7,6 @@
 #include <vector>
 
 
-
 namespace WGPUBoids {
 
 class Camera;

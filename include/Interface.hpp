@@ -3,18 +3,18 @@
 #include "webgpu/webgpu_cpp.h"
 #include "GLFW/glfw3.h"
 #include "glm/glm.hpp"
-
-// std
 #include <CoreData.hpp>
 
 namespace WGPUBoids {
+
+class Camera;
 
 class Interface {
 public:
     Interface() = default;
     ~Interface();
 
-    bool init(GLFWwindow* window, wgpu::Device device, wgpu::TextureFormat targetFormat);
+    bool init(GLFWwindow* window, Camera* pCamera, wgpu::Device device, wgpu::TextureFormat targetFormat);
     void destroy();
     void beginFrame();
     void buildUI();
@@ -28,6 +28,7 @@ private:
     bool divideFlocks = false;
 
     GLFWwindow* glfwWindow = nullptr;
+    Camera* camera = nullptr;
     bool showControlPanel = false;
 public:
     const SimulationParams& getParams() const { return params; }

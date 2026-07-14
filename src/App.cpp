@@ -39,9 +39,7 @@ bool App::init(const char *title) {
         float flockId = static_cast<float>(i % 3);
         boids.push_back(BoidData(glm::vec4(dis(gen), dis(gen), dis(gen), flockId), glm::vec4(dis(gen), dis(gen), dis(gen), 0.f), glm::vec4(0.f)));
     }
-
     
-
     if (!gpuContext.init(window.getGLFWwindow(), width, height)) {
         std::cerr << "Failed to initialize WebGPU Context\n";
         return false;
@@ -62,7 +60,7 @@ bool App::init(const char *title) {
 
     renderer.updateMeshBuffers(ResourceManager::getInstance().loadObj("boid.obj"));
 
-    if (!uiLayer.init(window.getGLFWwindow(), gpuContext.getDevice(), gpuContext.getSurfaceFormat())) {
+    if (!uiLayer.init(window.getGLFWwindow(), &camera, gpuContext.getDevice(), gpuContext.getSurfaceFormat())) {
         std::cerr << "Could not initialize UI Layer!" << std::endl;
         return false;
     }
