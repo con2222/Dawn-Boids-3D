@@ -6,8 +6,6 @@ cmake_install.cmake
 compile_commands.json
 build/
 
-assets/*
-!assets/boid.obj
 .clang-format
 
 .idea/
