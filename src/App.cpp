@@ -8,7 +8,6 @@
 #include <iostream>
 #include <random>
 #include <thread>
-#include <chrono>
 
 
 namespace WGPUBoids {
@@ -67,29 +66,22 @@ bool App::init(const char *title) {
 void App::run() {
     while (!window.shouldClose()) {
         auto frameStart = std::chrono::high_resolution_clock::now();
+        
         deltaTime = getDeltaTime();
+        
         if (!handleWindowEvents()) { 
             std::this_thread::sleep_for(std::chrono::milliseconds(16));
             continue;
-        };
+        }
+        
         update(deltaTime);
-
 
         {
             C2Core::ScopedProfiler p("Renderer::draw", C2Core::TimeUnit::Microseconds);
             render();
         }
 
-        int targetFPS = uiLayer.getTargetFPS();
-        if (targetFPS > 0) {
-            double targetDuration = 1000.0 / targetFPS;
-            auto frameEnd = std::chrono::high_resolution_clock::now();
-            double frameDuration = std::chrono::duration<double, std::milli>(frameEnd - frameStart).count();
-
-            if (frameDuration < targetDuration) {
-                std::this_thread::sleep_for(std::chrono::duration<double, std::milli>(targetDuration - frameDuration));
-            }
-        }
+        enforceFPSLimit(frameStart, uiLayer.getTargetFPS());
     }
 }
 
@@ -103,6 +95,24 @@ void App::render() {
     uiLayer.buildUI();
     renderer.draw(gpuContext, camera, uiLayer);
     gpuContext.present();
+}
+
+void App::enforceFPSLimit(std::chrono::time_point<std::chrono::high_resolution_clock> frameStart, int targetFPS) {
+    if (targetFPS <= 0) return;
+
+    double targetDuration = 1000.0 / targetFPS;
+
+    while (true) {
+        auto now = std::chrono::high_resolution_clock::now();
+        double currentDuration = std::chrono::duration<double, std::milli>(now - frameStart).count();
+        double timeRemaining = targetDuration - currentDuration;
+
+        if (timeRemaining <= 0) {
+            break;
+        }
+
+        std::this_thread::yield();
+    }
 }
 
 void App::handleKeyboard() {

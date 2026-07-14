@@ -7,6 +7,8 @@
 #include "CoreData.hpp"
 #include "Interface.hpp"
 
+#include <chrono>
+
 
 namespace WGPUBoids {
 
@@ -34,6 +36,7 @@ class App {
     float getDeltaTime() const;
     bool handleWindowEvents();
     void generateInitialBoids();
+    void enforceFPSLimit(std::chrono::time_point<std::chrono::high_resolution_clock> frameStart, int targetFPS);
 
     WindowContext window;
     WebGPUContext gpuContext;

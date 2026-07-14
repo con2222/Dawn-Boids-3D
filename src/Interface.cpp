@@ -180,6 +180,7 @@ void Interface::buildUI()
             if (ImGui::IsItemDeactivatedAfterEdit()) {
                 targetFPS = tempFPS;
             }
+            ImGui::Text("Current FPS: %.1f", ImGui::GetIO().Framerate);
         }
 
         ImGui::Spacing();
