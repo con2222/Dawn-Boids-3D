@@ -30,15 +30,7 @@ bool App::init(const char *title) {
         return false;
     }
 
-    // TODO: new func for random numbers
-    std::random_device rd;
-    std::mt19937 gen(rd());
-    std::uniform_real_distribution dis(-uiLayer.getParams().cubeSize * 3.f, uiLayer.getParams().cubeSize * 3.f);
-
-    for (size_t i = 0; i < numBoids; i++) {
-        float flockId = static_cast<float>(i % 3);
-        boids.push_back(BoidData(glm::vec4(dis(gen), dis(gen), dis(gen), flockId), glm::vec4(dis(gen), dis(gen), dis(gen), 0.f), glm::vec4(0.f)));
-    }
+    generateInitialBoids();
     
     if (!gpuContext.init(window.getGLFWwindow(), width, height)) {
         std::cerr << "Failed to initialize WebGPU Context\n";
@@ -89,56 +81,60 @@ void App::render() {
     gpuContext.present();
 }
 
+void App::handleKeyboard() {
+    if (glfwGetKey(window.getGLFWwindow(), GLFW_KEY_W) == GLFW_PRESS) camera.moveForward(deltaTime);
+    if (glfwGetKey(window.getGLFWwindow(), GLFW_KEY_S) == GLFW_PRESS) camera.moveBackward(deltaTime);
+    if (glfwGetKey(window.getGLFWwindow(), GLFW_KEY_A) == GLFW_PRESS) camera.moveLeft(deltaTime);
+    if (glfwGetKey(window.getGLFWwindow(), GLFW_KEY_D) == GLFW_PRESS) camera.moveRight(deltaTime);
+    if (glfwGetKey(window.getGLFWwindow(), GLFW_KEY_SPACE) == GLFW_PRESS) camera.moveUp(deltaTime);
+    if (glfwGetKey(window.getGLFWwindow(), GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS) camera.moveDown(deltaTime);
+    if (glfwGetKey(window.getGLFWwindow(), GLFW_KEY_EQUAL) == GLFW_PRESS) camera.updateCameraSpeed(0.05f);
+    if (glfwGetKey(window.getGLFWwindow(), GLFW_KEY_MINUS) == GLFW_PRESS) camera.updateCameraSpeed(-0.05f);
+    if (glfwGetKey(window.getGLFWwindow(), GLFW_KEY_P) == GLFW_PRESS) {
+        printMatrix("\nView Matrix", camera.getViewMatrix());
+        float aspect = static_cast<float>(window.getWidth()) / static_cast<float>(window.getHeight());
+        printMatrix("Projection", camera.getProjectionMatrix(aspect));
+    }
+}
+
+void App::handleMouse() {
+    float scroll = window.getAndResetScrollDelta();
+    if (scroll != 0.f) {
+        camera.zoom(scroll);
+    }
+
+    static double lastX = 0.0, lastY = 0.0;
+    static bool isDragging = false;
+
+    if (glfwGetMouseButton(window.getGLFWwindow(), GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS) {
+        double xpos, ypos;
+        glfwGetCursorPos(window.getGLFWwindow(), &xpos, &ypos);
+
+        if (!isDragging) {
+            lastX = xpos;
+            lastY = ypos;
+            isDragging = true;
+        }
+        else {
+            camera.rotate(static_cast<float>(xpos - lastX), static_cast<float>(ypos - lastY));
+            lastX = xpos;
+            lastY = ypos;
+        }
+    }
+    else {
+        isDragging = false;
+    }
+}
+
 void App::processInput() {
     ImGuiIO& io = ImGui::GetIO();
 
-
     if (!io.WantCaptureKeyboard) {
-        if (glfwGetKey(window.getGLFWwindow(), GLFW_KEY_W) == GLFW_PRESS) camera.moveForward(deltaTime);
-        if (glfwGetKey(window.getGLFWwindow(), GLFW_KEY_S) == GLFW_PRESS) camera.moveBackward(deltaTime);
-        if (glfwGetKey(window.getGLFWwindow(), GLFW_KEY_A) == GLFW_PRESS) camera.moveLeft(deltaTime);
-        if (glfwGetKey(window.getGLFWwindow(), GLFW_KEY_D) == GLFW_PRESS) camera.moveRight(deltaTime);
-        if (glfwGetKey(window.getGLFWwindow(), GLFW_KEY_SPACE) == GLFW_PRESS) camera.moveUp(deltaTime);
-        if (glfwGetKey(window.getGLFWwindow(), GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS) camera.moveDown(deltaTime);
-
-        // TODO: Add new params
-        if (glfwGetKey(window.getGLFWwindow(), GLFW_KEY_EQUAL) == GLFW_PRESS) camera.updateCameraSpeed(0.05f);
-        if (glfwGetKey(window.getGLFWwindow(), GLFW_KEY_MINUS) == GLFW_PRESS) camera.updateCameraSpeed(-0.05f);
-
-        if (glfwGetKey(window.getGLFWwindow(), GLFW_KEY_P) == GLFW_PRESS) {
-            printMatrix("\nView Matrix", camera.getViewMatrix());
-            printMatrix("Projection", camera.getProjectionMatrix(1920.0f / 1080.0f));
-        }
+        handleKeyboard();
     }
     
-
     if (!io.WantCaptureMouse) {
-        float scroll = window.getAndResetScrollDelta();
-        if (scroll != 0.f) {
-            camera.zoom(scroll);
-        }
-
-        static double lastX = 0.0, lastY = 0.0;
-        static bool isDragging = false;
-
-        if (glfwGetMouseButton(window.getGLFWwindow(), GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS) {
-            double xpos, ypos;
-            glfwGetCursorPos(window.getGLFWwindow(), &xpos, &ypos);
-
-            if (!isDragging) {
-                lastX = xpos;
-                lastY = ypos;
-                isDragging = true;
-            }
-            else {
-                camera.rotate(static_cast<float>(xpos - lastX), static_cast<float>(ypos - lastY));
-                lastX = xpos;
-                lastY = ypos;
-            }
-        }
-        else {
-            isDragging = false;
-        }
+        handleMouse();
     }
 }
 
@@ -168,6 +164,25 @@ bool App::handleWindowEvents()
     }
 
     return true;
+}
+
+void App::generateInitialBoids() {
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    
+    float spawnRadius = uiLayer.getParams().cubeSize * 3.f;
+    std::uniform_real_distribution<float> dis(-spawnRadius, spawnRadius);
+
+    boids.reserve(numBoids); 
+
+    for (size_t i = 0; i < numBoids; i++) {
+        float flockId = static_cast<float>(i % 3);
+        boids.push_back(BoidData(
+            glm::vec4(dis(gen), dis(gen), dis(gen), flockId),
+            glm::vec4(dis(gen), dis(gen), dis(gen), 0.f),
+            glm::vec4(0.f)
+        ));
+    }
 }
 
 }; // namespace WGPUBoids

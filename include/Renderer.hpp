@@ -84,6 +84,11 @@ class Renderer {
 
     void initDebugVelocityPipeline(wgpu::ShaderModule shader, wgpu::TextureFormat surfaceFormat, wgpu::TextureFormat depthFormat);
     void initDebugCoMPipeline(wgpu::ShaderModule shader, wgpu::TextureFormat surfaceFormat, wgpu::TextureFormat depthFormat);
+    
+    void updateUniforms(WebGPUContext& gpu, const Camera& camera, Interface& uiLayer);
+    void runComputePass(wgpu::CommandEncoder& encoder, const SimulationParams& params);
+    void runRenderPass(wgpu::CommandEncoder& encoder, wgpu::TextureView targetView, WebGPUContext& gpu, const SimulationParams& params, Interface& uiLayer);
+    void runUIPass(wgpu::CommandEncoder& encoder, wgpu::TextureView targetView, Interface& uiLayer);
 
     int frameCount = 0;
 };

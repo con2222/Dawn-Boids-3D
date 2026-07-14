@@ -82,7 +82,6 @@ bool WebGPUContext::initDevice() {
     deviceDesc.defaultQueue.nextInChain = nullptr;
     deviceDesc.defaultQueue.label = "The default queue";
 
-    // TODO: Change to cpp-API
     deviceDesc.deviceLostCallbackInfo.callback = [](WGPUDevice const * device, WGPUDeviceLostReason reason, char const* message, void* /* pUserData */) {
         std::cerr << "Device lost: reason " << reason << " device: " << device;
         if (message) std::cerr << " (" << message << ")";
@@ -112,7 +111,6 @@ bool WebGPUContext::initDevice() {
         instance.ProcessEvents();
     }
 
-    // TODO: Change to cpp-API
     device.SetUncapturedErrorCallback(
         [](WGPUErrorType type, char const* message, void*) {
             std::cerr << "Uncaptured device error: type" << static_cast<uint32_t>(type);

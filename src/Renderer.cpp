@@ -176,6 +176,28 @@ void Renderer::initCompute(wgpu::ShaderModule computeShader, size_t boidsCount) 
 void Renderer::draw(WebGPUContext &gpu, const Camera& camera, Interface& uiLayer) {
     device.Tick();
 
+    updateUniforms(gpu, camera, uiLayer);
+
+    wgpu::TextureView targetView = gpu.getNextSurfaceViewData();
+    if (!targetView) return;
+
+    wgpu::CommandEncoderDescriptor encoderDesc = {};
+    wgpu::CommandEncoder encoder = device.CreateCommandEncoder(&encoderDesc);
+
+    const SimulationParams& params = uiLayer.getParams();
+
+    runComputePass(encoder, params);
+    runRenderPass(encoder, targetView, gpu, params, uiLayer);
+    runUIPass(encoder, targetView, uiLayer);
+
+    wgpu::CommandBufferDescriptor cmdBufferDesc = {};
+    wgpu::CommandBuffer command = encoder.Finish(&cmdBufferDesc);
+    queue.Submit(1, &command);
+
+    frameCount++;
+}
+
+void Renderer::updateUniforms(WebGPUContext& gpu, const Camera& camera, Interface& uiLayer) {
     auto params = uiLayer.getParams();
     params.visionRadius = glm::cos(glm::radians(params.visionRadius));
 
@@ -183,13 +205,14 @@ void Renderer::draw(WebGPUContext &gpu, const Camera& camera, Interface& uiLayer
     boidUniforms.time = glfwGetTime();
     boidUniforms.modelMatrix = glm::scale(glm::mat4(1.f), glm::vec3(0.1f, 0.1f, 0.1f));
     boidUniforms.viewMatrix = camera.getViewMatrix();
+    
     camera.debug();
+    
     float aspect = static_cast<float>(gpu.getSurfaceConfig().width) / static_cast<float>(gpu.getSurfaceConfig().height);
     boidUniforms.projectionMatrix = camera.getProjectionMatrix(aspect);
     boidUniforms.cameraPosition = camera.getPosition();
     boidUniforms.color = { 0.2f, 0.1f, 0.3f, 1.f };
     boidUniforms.divideFlocks = params.divideFlocks;
-
 
     cubeUniforms.time = glfwGetTime();
     cubeUniforms.modelMatrix = glm::scale(glm::mat4(1.f), glm::vec3(params.cubeSize));
@@ -200,17 +223,10 @@ void Renderer::draw(WebGPUContext &gpu, const Camera& camera, Interface& uiLayer
 
     queue.WriteBuffer(boidUniformBuffer, 0, &boidUniforms, sizeof(Uniforms));
     queue.WriteBuffer(cubeUniformBuffer, 0, &cubeUniforms, sizeof(Uniforms));
-
-
-    wgpu::TextureView targetView = gpu.getNextSurfaceViewData();
-    if (!targetView) return;
-
-
     queue.WriteBuffer(simulationParamsBuffer, 0, &params, sizeof(SimulationParams));
-    // compute
-    wgpu::CommandEncoderDescriptor encoderDesc = {};
-    wgpu::CommandEncoder encoder = device.CreateCommandEncoder(&encoderDesc);
+}
 
+void Renderer::runComputePass(wgpu::CommandEncoder& encoder, const SimulationParams& params) {
     wgpu::ComputePassDescriptor computePassDescriptor = {};
     wgpu::ComputePassEncoder computePass = encoder.BeginComputePass(&computePassDescriptor);
     
@@ -225,8 +241,9 @@ void Renderer::draw(WebGPUContext &gpu, const Camera& camera, Interface& uiLayer
     uint32_t workgroupCount = (params.activeBoidsCount + 63) / 64;
     computePass.DispatchWorkgroups(workgroupCount, 1, 1);
     computePass.End();
+}
 
-    // Render
+void Renderer::runRenderPass(wgpu::CommandEncoder& encoder, wgpu::TextureView targetView, WebGPUContext& gpu, const SimulationParams& params, Interface& uiLayer) {
     wgpu::RenderPassColorAttachment colorAttachment = {};
     colorAttachment.view = gpu.getMsaaTextureView();
     colorAttachment.resolveTarget = targetView;
@@ -247,6 +264,8 @@ void Renderer::draw(WebGPUContext &gpu, const Camera& camera, Interface& uiLayer
     passDesc.depthStencilAttachment = &depthAttachment;
 
     wgpu::RenderPassEncoder pass = encoder.BeginRenderPass(&passDesc);
+    
+    // Boids
     pass.SetPipeline(renderPipeline);
     pass.SetVertexBuffer(0, vertexBuffer);
     pass.SetIndexBuffer(indexBuffer, wgpu::IndexFormat::Uint32, 0, indexCount * sizeof(uint32_t));
@@ -257,12 +276,14 @@ void Renderer::draw(WebGPUContext &gpu, const Camera& camera, Interface& uiLayer
     }
     pass.DrawIndexed(indexCount, params.activeBoidsCount, 0, 0, 0);
 
+    // Cube
     pass.SetPipeline(linePipeline);
     pass.SetVertexBuffer(0, cubeVertexBuffer);
     pass.SetIndexBuffer(cubeIndexBuffer, wgpu::IndexFormat::Uint32, 0, cubeIndexCount * sizeof(uint32_t));
     pass.SetBindGroup(0, cubeBindGroups[0], 0, nullptr);
     pass.DrawIndexed(cubeIndexCount, 1, 0, 0, 0);
     
+    // Debug vectors
     if (uiLayer.getShowVelocity()) {
         pass.SetPipeline(debugVelocityPipeline);
         if (frameCount % 2 == 0) pass.SetBindGroup(0, boidBindGroups[1], 0, nullptr);
@@ -277,8 +298,9 @@ void Renderer::draw(WebGPUContext &gpu, const Camera& camera, Interface& uiLayer
     }
 
     pass.End();
+}
 
-    /* Render imGui UI */
+void Renderer::runUIPass(wgpu::CommandEncoder& encoder, wgpu::TextureView targetView, Interface& uiLayer) {
     wgpu::RenderPassColorAttachment uiAttachment = {};
     uiAttachment.view = targetView;
     uiAttachment.resolveTarget = nullptr;
@@ -293,13 +315,6 @@ void Renderer::draw(WebGPUContext &gpu, const Camera& camera, Interface& uiLayer
     wgpu::RenderPassEncoder pass2 = encoder.BeginRenderPass(&pass2Desc);
     uiLayer.draw(pass2);
     pass2.End();
-    
-
-    wgpu::CommandBufferDescriptor cmdBufferDesc = {};
-    wgpu::CommandBuffer command = encoder.Finish(&cmdBufferDesc);
-    queue.Submit(1, &command);
-
-    frameCount++;
 }
 
 void Renderer::initBuffers(const SimulationParams& params) {
@@ -442,7 +457,7 @@ void Renderer::initBindGroups(size_t boidsCount) {
 
     wgpu::BindGroupEntry& cubeBoidsT = cubeBindings[1];
     cubeBoidsT.binding = 1;
-    cubeBoidsT.buffer = boidsBufferB; // заглушка
+    cubeBoidsT.buffer = boidsBufferB;
     cubeBoidsT.offset = 0;
     cubeBoidsT.size = boidsCount * sizeof(BoidData);
 
@@ -470,7 +485,6 @@ void Renderer::initRenderPipeline(wgpu::ShaderModule shader, wgpu::TextureFormat
     vertexAttributes[0].format = wgpu::VertexFormat::Float32x3;
     vertexAttributes[0].offset = offsetof(VertexAttributes, position);
 
-    //
     vertexAttributes[1].shaderLocation = 1;
     vertexAttributes[1].format = wgpu::VertexFormat::Float32x3;
     vertexAttributes[1].offset = offsetof(VertexAttributes, normal);
@@ -542,7 +556,6 @@ void Renderer::initLinePipeline(wgpu::ShaderModule shader, wgpu::TextureFormat s
     vertexAttributes[0].format = wgpu::VertexFormat::Float32x3;
     vertexAttributes[0].offset = offsetof(VertexAttributes, position);
 
-    //
     vertexAttributes[1].shaderLocation = 1;
     vertexAttributes[1].format = wgpu::VertexFormat::Float32x3;
     vertexAttributes[1].offset = offsetof(VertexAttributes, normal);

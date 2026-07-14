@@ -29,8 +29,11 @@ class App {
     void update(float deltaTime);
     void render();
     void processInput();
+    void handleKeyboard();
+    void handleMouse();
     float getDeltaTime() const;
     bool handleWindowEvents();
+    void generateInitialBoids();
 
     WindowContext window;
     WebGPUContext gpuContext;
