@@ -6,19 +6,20 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
 set(PROJECT_NAME webgpu-boids-3d)
-set(APP_NAME app)
+set(APP_NAME boids-simulation)
 
 include(FetchContent)
 
 option(DEV_MODE "Set up development helper settings" ON)
 
 project(${PROJECT_NAME}
-        VERSION 0.1
+        VERSION 1.0
         LANGUAGES C CXX
 )
 
 option(USE_WAYLAND "Build with Wayland support" ON)
 option(USE_X11 "Build with X11 support" ON)
+option(SHOW_CONSOLE "Show terminal console window" OFF)
 
 if (WIN32)
     message(STATUS "Configuring for Windows (D3D12/Vulkan)")
@@ -67,17 +68,23 @@ set(SOURCES
 
 add_executable(${APP_NAME} ${SOURCES})
 
+if(NOT SHOW_CONSOLE)
+    if(WIN32)
+        set_target_properties(${APP_NAME} PROPERTIES WIN32_EXECUTABLE TRUE)
+        if(MSVC)
+            set_property(TARGET ${APP_NAME} APPEND_STRING PROPERTY LINK_FLAGS " /ENTRY:mainCRTStartup")
+        endif()
+    elseif(APPLE)
+        set_target_properties(${APP_NAME} PROPERTIES MACOSX_BUNDLE TRUE)
+    endif()
+endif()
+
 if (DEV_MODE)
-    # In dev mode, we load resources from the source tree, so that when we
-    # dynamically edit resources (like shaders), these are correctly
-    # versionned.
     target_compile_definitions(${APP_NAME} PRIVATE
         RESOURCE_DIR="${CMAKE_CURRENT_SOURCE_DIR}/assets"   
         SHADER_DIR="${CMAKE_CURRENT_SOURCE_DIR}/shaders"
     )
 else ()
-    # In release mode, we just load resources relatively to wherever the
-    # executable is launched from, so that the binary is portable
     target_compile_definitions(${APP_NAME} PRIVATE
         RESOURCE_DIR="./assets"
         SHADER_DIR="./shaders"

@@ -134,36 +134,52 @@ void Interface::buildUI()
 
         ImGui::Spacing();
 
-        ImGui::SeparatorText("Camera Settings");
+        if (ImGui::CollapsingHeader("Camera Settings")) {
+            if (camera != nullptr) {
+                int currentMode = (camera->getMode() == CameraMode::Free) ? 0 : 1;
+                int previousMode = currentMode;
 
-        if (camera != nullptr) {
-            int currentMode = (camera->getMode() == CameraMode::Free) ? 0 : 1;
-            int previousMode = currentMode;
+                ImGui::RadioButton("Free Camera", &currentMode, 0);
+                ImGui::SameLine();
+                ImGui::RadioButton("Orbital", &currentMode, 1);
 
-            ImGui::RadioButton("Free Camera", &currentMode, 0);
-            ImGui::SameLine();
-            ImGui::RadioButton("Orbital", &currentMode, 1);
-
-            if (currentMode != previousMode) {
-                if (currentMode == 0) camera->setMode(CameraMode::Free);
-                else camera->setMode(CameraMode::Orbital);
-            }
-
-            ImGui::Spacing();
-
-            float currentSpeed = camera->getMovementSpeed();
-            if (ImGui::SliderFloat("Camera Speed", &currentSpeed, 1.0f, 100.0f)) {
-                camera->setMovementSpeed(currentSpeed);
-            }
-
-            if (camera->getMode() == CameraMode::Orbital) {
-                float currentRadius = camera->getRadius();
-                if (ImGui::SliderFloat("Orbital Distance", &currentRadius, 1.0f, 300.0f)) {
-                    camera->setRadius(currentRadius);
+                if (currentMode != previousMode) {
+                    if (currentMode == 0) camera->setMode(CameraMode::Free);
+                    else camera->setMode(CameraMode::Orbital);
                 }
+
+                ImGui::Spacing();
+
+                float currentSpeed = camera->getMovementSpeed();
+                if (ImGui::SliderFloat("Camera Speed", &currentSpeed, 1.0f, 100.0f)) {
+                    camera->setMovementSpeed(currentSpeed);
+                }
+
+                if (camera->getMode() == CameraMode::Orbital) {
+                    float currentRadius = camera->getRadius();
+                    if (ImGui::SliderFloat("Orbital Distance", &currentRadius, 1.0f, 300.0f)) {
+                        camera->setRadius(currentRadius);
+                    }
+                }
+            } else {
+                ImGui::TextColored(ImVec4(1,0,0,1), "Camera pointer is missing!");
             }
-        } else {
-            ImGui::TextColored(ImVec4(1,0,0,1), "Camera pointer is missing!");
+        };
+
+
+        if (ImGui::CollapsingHeader("System & Performance")) {
+            if (targetFPS == 0) {
+                ImGui::Text("FPS Limit: Uncapped");
+            } else {
+                ImGui::Text("FPS Limit: %d", targetFPS);
+            }
+            static int tempFPS = targetFPS;
+
+            ImGui::SliderInt("FPS Limit", &tempFPS, 0, 240);
+            
+            if (ImGui::IsItemDeactivatedAfterEdit()) {
+                targetFPS = tempFPS;
+            }
         }
 
         ImGui::Spacing();

@@ -140,7 +140,7 @@ void WebGPUContext::setupSurfaceConfig(int width, int height) {
     surfaceConfig.nextInChain = nullptr;
     surfaceConfig.device = device;
     surfaceConfig.usage = wgpu::TextureUsage::RenderAttachment;
-    surfaceConfig.presentMode = wgpu::PresentMode::Fifo;
+    surfaceConfig.presentMode = wgpu::PresentMode::Immediate;
     surfaceConfig.viewFormatCount = 0;
     surfaceConfig.viewFormats = nullptr;
 

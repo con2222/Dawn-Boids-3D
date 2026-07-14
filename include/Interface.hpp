@@ -23,6 +23,7 @@ private:
     unsigned int fontSize = 16.f;
     float currentScale = 2.1f;
     SimulationParams params;
+    int targetFPS = 60;
     bool showVelocity = false;
     bool showCoM = false;
     bool divideFlocks = false;
@@ -36,6 +37,8 @@ public:
 
     bool getShowVelocity() const { return showVelocity; }
     bool getShowCoM() const { return showCoM; }
+
+    int getTargetFPS() const { return targetFPS; }
 };
 
 } // namespace WGPUBoids

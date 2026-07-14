@@ -1,10 +1,14 @@
+#include "C2Profiler.hpp"
 #include "App.hpp"
 #include "ResourceManager.hpp"
 #include "imgui.h"
 #include "Debug.hpp"
 
+
 #include <iostream>
 #include <random>
+#include <thread>
+#include <chrono>
 
 
 namespace WGPUBoids {
@@ -62,10 +66,30 @@ bool App::init(const char *title) {
 
 void App::run() {
     while (!window.shouldClose()) {
+        auto frameStart = std::chrono::high_resolution_clock::now();
         deltaTime = getDeltaTime();
-        handleWindowEvents();
+        if (!handleWindowEvents()) { 
+            std::this_thread::sleep_for(std::chrono::milliseconds(16));
+            continue;
+        };
         update(deltaTime);
-        render();
+
+
+        {
+            C2Core::ScopedProfiler p("Renderer::draw", C2Core::TimeUnit::Microseconds);
+            render();
+        }
+
+        int targetFPS = uiLayer.getTargetFPS();
+        if (targetFPS > 0) {
+            double targetDuration = 1000.0 / targetFPS;
+            auto frameEnd = std::chrono::high_resolution_clock::now();
+            double frameDuration = std::chrono::duration<double, std::milli>(frameEnd - frameStart).count();
+
+            if (frameDuration < targetDuration) {
+                std::this_thread::sleep_for(std::chrono::duration<double, std::milli>(targetDuration - frameDuration));
+            }
+        }
     }
 }
 
