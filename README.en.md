@@ -5,7 +5,9 @@
 An interactive 3D flocking behavior simulation (based on Craig Reynolds' Boids algorithm) powered by a modern graphics API. Written in **C++** using **WebGPU (Google Dawn)**, this project demonstrates how offloading mathematical calculations to Compute Shaders enables the real-time processing of up to 150,000 independent agents.
 
 ## Simulation Demo
-[![Dawn Boids 3D Demo](https://img.youtube.com/vi/idvMb-dypzo/maxresdefault.jpg)](https://youtu.be/idvMb-dypzo)
+![Dawn Boids 3D Demo](assets/demo.gif)
+
+[Video](https://youtu.be/idvMb-dypzo)
 
 ## Simulation Features
 

@@ -7,6 +7,8 @@
 ## Демонстрация работы
 [![Dawn Boids 3D Demo](https://img.youtube.com/vi/idvMb-dypzo/maxresdefault.jpg)](https://youtu.be/idvMb-dypzo)
 
+[Видео с демонстрацией](https://youtu.be/idvMb-dypzo)
+
 ## Возможности симуляции
 
 Движок симуляции работает полностью на GPU и реализует несколько ключевых сценариев взаимодействия:
