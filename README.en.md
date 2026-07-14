@@ -8,7 +8,6 @@ An interactive 3D flocking behavior simulation (based on Craig Reynolds' Boids a
 
 > Demo video coming soon
 
----
 
 ## Simulation Features
 
@@ -18,7 +17,6 @@ The simulation engine runs entirely on the GPU and implements several key intera
 2. **Multi-Flocks and Hostility:** Birds can be divided into three independent color groups. Agents of the same group try to stick together, but approaching strangers triggers a repulsion factor (Strange Force), forcing them to aggressively avoid collisions.
 3. **Spatial Constraints:** The entire flock is confined within an invisible cube. Upon approaching the boundaries, agents smoothly adjust their velocity vector (Turn Factor) to avoid flying out of the visible area.
 
----
 
 ## Customization (`CoreData.hpp`)
 
@@ -45,7 +43,6 @@ struct SimulationParams {
 };
 ```
 
----
 
 ## Building and Running
 
