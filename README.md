@@ -1,73 +1,74 @@
-[Читать на русском](README.md) | [Read in English](README.en.md)
+[Читать на русском](README.ru.md) | [Read in English](README.md)
 
-# Dawn Boids 3D: Симуляция стаи на WebGPU
+# Dawn Boids 3D: Flocking Simulation on WebGPU
 
-Интерактивная трехмерная симуляция поведения стаи птиц (основанная на алгоритме Boids Крейга Рейнольдса) с использованием современного графического API. Проект написан на **C++** с применением **WebGPU (Google Dawn)** и демонстрирует, как перенос математических вычислений на вычислительные шейдеры позволяет обрабатывать до 150 000 независимых агентов в реальном времени.
+An interactive 3D flocking behavior simulation (based on Craig Reynolds' Boids algorithm) powered by a modern graphics API. Written in **C++** using **WebGPU (Google Dawn)**, this project demonstrates how offloading mathematical calculations to Compute Shaders enables the real-time processing of up to 150,000 independent agents.
 
-## Демонстрация работы
+## Simulation Demo
 ![Dawn Boids 3D Demo](assets/demo.gif)
 
-[Видео с демонстрацией](https://youtu.be/idvMb-dypzo)
+[Video](https://youtu.be/idvMb-dypzo)
 
-## Возможности симуляции
+## Simulation Features
 
-Движок симуляции работает полностью на GPU и реализует несколько ключевых сценариев взаимодействия:
+The simulation engine runs entirely on the GPU and implements several key interaction scenarios:
 
-1. **Базовое поведение стаи (Boids):** Каждый агент параллельно оценивает своих соседей и применяет три классических правила: разделение (Separation), выравнивание (Alignment) и сплоченность (Cohesion).
-2. **Мульти-стаи и враждебность:** Птицы могут быть разделены на три независимые цветовые группы. Агенты одной группы стремятся держаться вместе, но при сближении с чужаками активируется фактор отторжения (Strange Force), заставляя их агрессивно избегать столкновений.
-3. **Ограничение пространства:** Вся стая заперта в невидимом кубе. При приближении к границам агенты плавно корректируют свой вектор скорости (Turn Factor), чтобы избежать вылета за пределы зоны видимости.
+1. **Basic Flocking Behavior (Boids):** Every agent evaluates its neighbors in parallel and applies three classic rules: Separation, Alignment, and Cohesion.
+2. **Multi-Flocks and Hostility:** Birds can be divided into three independent color groups. Agents of the same group try to stick together, but approaching strangers triggers a repulsion factor (Strange Force), forcing them to aggressively avoid collisions.
+3. **Spatial Constraints:** The entire flock is confined within an invisible cube. Upon approaching the boundaries, agents smoothly adjust their velocity vector (Turn Factor) to avoid flying out of the visible area.
 
-## Технические возможности приложения
+## Technical Features
 
-1. **Счетчик кадров:** В панели управления встроены счетчик и функия ограничения FPS.
-2. **Debug опции:** Возможность отображения векторов скорости и локального центра масс.
-3. **Управление камерой:** Поддержка двух режимов трехмерной камеры Free и Orbital.
+1. **Frame Counter:** The control panel includes a built-in frame counter and an FPS limiting function.
+2. **Debug Options:** The ability to display velocity vectors and the local center of mass.
+3. **Camera Control:** Support for two 3D camera modes: Free and Orbital.
 
-В исходном коде используется C2Profiler - высокоточный CPU-профайлер, используйте его для замера времени подготовки кадра.
+The source code utilizes `C2Profiler`, a high-precision CPU profiler; use it to measure frame preparation time.
 
-## Кастомизация (`CoreData.hpp`)
+## Customization (`CoreData.hpp`)
 
-Вы можете детально настраивать физику, геометрию ограничений и производительность симуляции прямо во время работы программы через панель ImGui. В основе этих настроек лежит структура `SimulationParams`, которая каждый кадр синхронизируется с видеокартой:
+You can fine-tune the physics, constraint geometry, and simulation performance in real-time via the ImGui panel. These settings are driven by the `SimulationParams` struct, which synchronizes with the GPU every frame:
 
 ```cpp
 struct SimulationParams {
     float deltaTime;
-    float visualRange = 2.0f;            // Радиус обзора птицы
-    float protectedRange = 0.5f;         // Личная зона (для избегания столкновений)
-    float strangerProtectedRange = 2.5f; // Радиус реакции на чужую стаю
-    float maxSpeed = 5.0f;               // Максимальная скорость полета
-    float minSpeed = 2.0f;               // Минимальная скорость полета
-    float cubeSize = 4.5f;               // Размеры ограничивающего куба
-    float cohesionFactor = 0.005f;       // Сила притяжения к центру масс соседей
-    float alignmentFactor = 0.05f;       // Сила выравнивания вектора скорости
-    float separationFactor = 0.05f;      // Сила отталкивания от соседей
-    float turnFactor = 0.15f;            // Сила разворота у границ куба
-    float strangeForceFactor = 10.0f;    // Сила отталкивания от чужаков
-    float visionRadius = 240;            // Угол обзора (в градусах)
-    float margin = 1.0f;                 // Отступ от границ куба для начала разворота
-    uint32_t activeBoidsCount = 1000;    // Текущее количество активных птиц
-    uint32_t divideFlocks = 0;           // Флаг разделения на разные стаи (0 или 1)
+    float visualRange = 2.0f;            // Bird's field of view radius
+    float protectedRange = 0.5f;         // Personal space (for collision avoidance)
+    float strangerProtectedRange = 2.5f; // Reaction radius to a foreign flock
+    float maxSpeed = 5.0f;               // Maximum flight speed
+    float minSpeed = 2.0f;               // Minimum flight speed
+    float cubeSize = 4.5f;               // Dimensions of the bounding cube
+    float cohesionFactor = 0.005f;       // Attraction force to the neighbors' center of mass
+    float alignmentFactor = 0.05f;       // Velocity vector alignment force
+    float separationFactor = 0.05f;      // Repulsion force from neighbors
+    float turnFactor = 0.15f;            // Turn force at the cube boundaries
+    float strangeForceFactor = 10.0f;    // Repulsion force from strangers
+    float visionRadius = 240;            // Field of view angle (in degrees)
+    float margin = 1.0f;                 // Margin from the cube boundaries to start turning
+    uint32_t activeBoidsCount = 1000;    // Current number of active birds
+    uint32_t divideFlocks = 0;           // Flag to divide into different flocks (0 or 1)
 };
 ```
 
-## Сборка и запуск
 
-### Требования
+## Building and Running
 
-Проект является кроссплатформенным. Для сборки потребуется:
+### Prerequisites
 
-* Компилятор с поддержкой C++17 (MSVC, GCC, Clang)
-* CMake (версии 3.20 или выше)
+The project is cross-platform. To build it, you will need:
 
-### Сборка (CMake)
+* A compiler with **C++17** support (MSVC, GCC, Clang)
+* **CMake** (version 3.20 or higher)
+
+### Building (CMake)
 
 ```bash
 git clone https://github.com/con2222/Dawn-Boids-3D.git
 cd Dawn-Boids-3d
-cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DDEV_MODE=OFF # На Linux укажите USE_WAYLAND=ON или USE_X11=ON
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DDEV_MODE=OFF # On Linux, specify USE_WAYLAND=ON or USE_X11=ON
 cmake --build build --config Release
 ```
 
-## Небольшое дополнение
+## A Little Note
 
-> Сейчас алгоритм работает "в лоб" со сложностью $O(N^2)$. Видеокарта конечно с этим справляется отлично, но в ближайшем будущем будет добавлена оптимизация Spatial Hashing. Это сильно разгрузит математику и позволит отрисовывать большее количество птиц.
+> Currently, the algorithm runs via a brute-force approach with a complexity of $O(N^2)$. While the GPU handles this exceptionally well, a Spatial Hashing optimization will be added in the near future. This will significantly reduce the mathematical load and allow for rendering an even larger number of birds.
