@@ -64,7 +64,7 @@ struct SimulationParams {
 ```bash
 git clone https://github.com/con2222/Dawn-Boids-3D.git
 cd Dawn-Boids-3d
-cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DDEV_MODE=OFF
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DDEV_MODE=OFF # На Linux укажите USE_WAYLAND=ON или USE_X11=ON
 cmake --build build --config Release
 ```
 
