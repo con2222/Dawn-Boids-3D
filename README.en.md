@@ -1,6 +1,6 @@
 [Читать на русском](README.md) | [Read in English](README.en.md)
 
-# Dawn Boids 3D: High-Performance Flocking Simulation on WebGPU
+# Dawn Boids 3D: Flocking Simulation on WebGPU
 
 An interactive 3D flocking behavior simulation (based on Craig Reynolds' Boids algorithm) powered by a modern graphics API. Written in **C++** using **WebGPU (Google Dawn)**, this project demonstrates how offloading mathematical calculations to Compute Shaders enables the real-time processing of up to 150,000 independent agents.
 
@@ -17,6 +17,13 @@ The simulation engine runs entirely on the GPU and implements several key intera
 2. **Multi-Flocks and Hostility:** Birds can be divided into three independent color groups. Agents of the same group try to stick together, but approaching strangers triggers a repulsion factor (Strange Force), forcing them to aggressively avoid collisions.
 3. **Spatial Constraints:** The entire flock is confined within an invisible cube. Upon approaching the boundaries, agents smoothly adjust their velocity vector (Turn Factor) to avoid flying out of the visible area.
 
+## Technical Features
+
+1. **Frame Counter:** The control panel includes a built-in frame counter and an FPS limiting function.
+2. **Debug Options:** The ability to display velocity vectors and the local center of mass.
+3. **Camera Control:** Support for two 3D camera modes: Free and Orbital.
+
+The source code utilizes `C2Profiler`, a high-precision CPU profiler; use it to measure frame preparation time.
 
 ## Customization (`CoreData.hpp`)
 
@@ -61,3 +68,8 @@ cd Dawn-Boids-3d
 cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DDEV_MODE=OFF
 cmake --build build --config Release
 ```
+
+## A Little Note
+
+> Currently, the algorithm runs via a brute-force approach with a complexity of $O(N^2)$. While the GPU handles this exceptionally well, a Spatial Hashing optimization will be added in the near future. This will significantly reduce the mathematical load and allow for rendering an even larger number of birds.
+
