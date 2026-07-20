@@ -53,6 +53,7 @@ add_subdirectory(vendor/glfw3webgpu)
 add_subdirectory(vendor/glm)
 add_subdirectory(vendor/imgui)
 add_subdirectory(vendor/webgpu)
+add_subdirectory(vendor/c2-core-lib)
 
 set(SOURCES 
     src/main.cpp
@@ -125,6 +126,7 @@ target_link_libraries(${APP_NAME} PRIVATE
     glfw3webgpu
     glm
     imgui
+    C2Core
 )
 
 set_target_properties(${APP_NAME} PROPERTIES

@@ -60,14 +60,16 @@ bool App::init(const char *title) {
         return false;
     }
 
+    timeCtx = C2Core::Time::create(uiLayer.getTargetFPS(), 60.0);
+
     return true;
 }
 
 void App::run() {
     while (!window.shouldClose()) {
-        auto frameStart = std::chrono::high_resolution_clock::now();
-        
-        deltaTime = getDeltaTime();
+        C2Core::Time::startFrame(timeCtx);
+        C2Core::Time::setTargetFPS(timeCtx, uiLayer.getTargetFPS());
+        deltaTime = C2Core::Time::getDeltaTime(timeCtx);
         
         if (!handleWindowEvents()) { 
             std::this_thread::sleep_for(std::chrono::milliseconds(16));
@@ -85,7 +87,7 @@ void App::run() {
             window.toggleFullscreen();
         }
 
-        enforceFPSLimit(frameStart, uiLayer.getTargetFPS());
+        C2Core::Time::endFrame(timeCtx, C2Core::Time::WaitMode::Spin);
     }
 }
 
@@ -99,24 +101,6 @@ void App::render() {
     uiLayer.buildUI();
     renderer.draw(gpuContext, camera, uiLayer);
     gpuContext.present();
-}
-
-void App::enforceFPSLimit(std::chrono::time_point<std::chrono::high_resolution_clock> frameStart, int targetFPS) {
-    if (targetFPS <= 0) return;
-
-    double targetDuration = 1000.0 / targetFPS;
-
-    while (true) {
-        auto now = std::chrono::high_resolution_clock::now();
-        double currentDuration = std::chrono::duration<double, std::milli>(now - frameStart).count();
-        double timeRemaining = targetDuration - currentDuration;
-
-        if (timeRemaining <= 0) {
-            break;
-        }
-
-        std::this_thread::yield();
-    }
 }
 
 void App::handleKeyboard() {
@@ -176,19 +160,6 @@ void App::processInput() {
     }
 }
 
-float App::getDeltaTime() const {
-    static double lastFrame = 0.0;
-    double currentFrame = glfwGetTime();
-    float deltaTime = static_cast<float>(currentFrame - lastFrame);
-    lastFrame = currentFrame;
-
-    if (deltaTime > 0.1f) {
-        deltaTime = 0.016f; 
-    }
-
-    return deltaTime;
-}
-
 bool App::handleWindowEvents()
 {
     window.pollEvents();
@@ -221,6 +192,10 @@ void App::generateInitialBoids() {
             glm::vec4(0.f)
         ));
     }
+}
+
+App::~App() {
+    C2Core::Time::destroy(timeCtx);
 }
 
 }; // namespace WGPUBoids

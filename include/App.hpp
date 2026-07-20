@@ -6,6 +6,7 @@
 #include "Camera.hpp"
 #include "CoreData.hpp"
 #include "Interface.hpp"
+#include "C2Core/time_core.hpp"
 
 #include <chrono>
 
@@ -15,7 +16,7 @@ namespace WGPUBoids {
 class App {
   public:
     App() = default;
-    ~App() = default;
+    ~App();
 
     App(const App&) = delete;
     App& operator=(const App&) = delete;
@@ -33,10 +34,8 @@ class App {
     void processInput();
     void handleKeyboard();
     void handleMouse();
-    float getDeltaTime() const;
     bool handleWindowEvents();
     void generateInitialBoids();
-    void enforceFPSLimit(std::chrono::time_point<std::chrono::high_resolution_clock> frameStart, int targetFPS);
 
     WindowContext window;
     WebGPUContext gpuContext;
@@ -48,6 +47,7 @@ class App {
     int numBoids = 150000;
 
     float deltaTime;
+    C2Core::Time::Context* timeCtx = nullptr;
 };
 
 }; // namespace WGPUBoids
