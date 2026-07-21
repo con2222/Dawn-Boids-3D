@@ -1,6 +1,6 @@
 #pragma once
 
-#include "WebGpuContext.hpp"
+#include "WebGPUContext.hpp"
 #include "Renderer.hpp"
 #include "WindowContext.hpp"
 #include "Camera.hpp"
